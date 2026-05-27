@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  trainer
+  trainee
+}
+
+enum InviteStatus {
+  pending
+  active
+}
+
+enum ScoreTier {
+  green
+  yellow
+  red
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  trainerLinks  TrainerTrainee[] @relation("Trainer")
+  traineeLinks  TrainerTrainee[] @relation("Trainee")
+  sentInvites   Invite[]         @relation("InviteSender")
+  sessions      Session[]
+  sessionReads  SessionRead[]
+
+  @@map("users")
+}
+
+model TrainerTrainee {
+  id          String       @id @default(uuid())
+  trainerId   String       @map("trainer_id")
+  traineeId   String?      @map("trainee_id")
+  inviteEmail String       @map("invite_email")
+  status      InviteStatus @default(pending)
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  trainer  User    @relation("Trainer", fields: [trainerId], references: [id])
+  trainee  User?   @relation("Trainee", fields: [traineeId], references: [id])
+  invites  Invite[]
+
+  @@unique([trainerId, traineeId])
+  @@map("trainer_trainee")
+}
+
+model Invite {
+  id               String    @id @default(uuid())
+  trainerId        String    @map("trainer_id")
+  email            String
+  token            String    @unique
+  expiresAt        DateTime  @map("expires_at")
+  usedAt           DateTime? @map("used_at")
+  trainerTraineeId String    @map("trainer_trainee_id")
+
+  trainer        User           @relation("InviteSender", fields: [trainerId], references: [id])
+  trainerTrainee TrainerTrainee @relation(fields: [trainerTraineeId], references: [id])
+
+  @@map("invites")
+}
+
+model Session {
+  id        String    @id @default(uuid())
+  traineeId String    @map("trainee_id")
+  startedAt DateTime  @map("started_at")
+  endedAt   DateTime? @map("ended_at")
+
+  trainee      User          @relation(fields: [traineeId], references: [id])
+  sets         Set[]
+  sessionReads SessionRead[]
+
+  @@map("sessions")
+}
+
+model Set {
+  id           String   @id @default(uuid())
+  sessionId    String   @map("session_id")
+  exerciseName String   @map("exercise_name")
+  weightKg     Decimal? @map("weight_kg") @db.Decimal(6, 2)
+  reps         Int
+  setNumber    Int      @map("set_number")
+  loggedAt     DateTime @default(now()) @map("logged_at")
+
+  session   Session    @relation(fields: [sessionId], references: [id])
+  formScore FormScore?
+
+  @@map("sets")
+}
+
+model FormScore {
+  id             String    @id @default(uuid())
+  setId          String    @unique @map("set_id")
+  scoreTier      ScoreTier @map("score_tier")
+  coachingText   String    @map("coaching_text")
+  angleData      Json      @map("angle_data")
+  confidenceLevel Decimal? @map("confidence_level") @db.Decimal(3, 2)
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  set Set @relation(fields: [setId], references: [id])
+
+  @@map("form_scores")
+}
+
+model SessionRead {
+  trainerId String   @map("trainer_id")
+  sessionId String   @map("session_id")
+  readAt    DateTime @default(now()) @map("read_at")
+
+  trainer User    @relation(fields: [trainerId], references: [id])
+  session Session @relation(fields: [sessionId], references: [id])
+
+  @@id([trainerId, sessionId])
+  @@map("session_reads")
+}

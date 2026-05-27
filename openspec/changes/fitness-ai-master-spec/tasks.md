@@ -1,18 +1,29 @@
 ## 1. Repository & Project Setup
 
-- [ ] 1.1 Initialize monorepo with npm workspaces: `apps/mobile`, `apps/api`, `packages/shared`
-- [ ] 1.2 Configure root TypeScript `tsconfig.json` with path aliases for `@shared/*`
-- [ ] 1.3 Create `packages/shared` with shared types: `User`, `Session`, `SessionSet`, `FormScore`, `ExerciseName`, API request/response shapes
-- [ ] 1.4 Set up `apps/api` — Node.js + Express + TypeScript, `ts-node-dev` for dev, `jest` for tests
-- [ ] 1.5 Set up `apps/mobile` — Expo (managed workflow + custom dev client), TypeScript, configure Metro bundler for monorepo path aliases; install `react-native-vision-camera` Expo plugin
-- [ ] 1.6 Set up PostgreSQL + Redis locally via Docker Compose
-- [ ] 1.7 Install and configure Prisma in `apps/api`: `prisma init`, define full schema (`users`, `trainer_trainee`, `invites`, `sessions`, `sets`, `form_scores`) with enums and relations, run `prisma migrate dev`
-- [ ] 1.8 Install and configure Redis client (`ioredis`) in `apps/api`; create `RedisService` with get/set/del and TTL helpers
-- [ ] 1.9 Configure environment variable management: `.env` files per package, `dotenv` on API, no secrets committed; document required env vars in a root `.env.example`
+- [x] 1.1 Initialize monorepo with npm workspaces: `apps/mobile`, `apps/api`, `packages/shared`
+- [x] 1.2 Configure root TypeScript `tsconfig.json` with path aliases for `@shared/*`
+- [x] 1.3 Create `packages/shared` with shared types: `User`, `Session`, `SessionSet`, `FormScore`, `ExerciseName`, API request/response shapes
+- [x] 1.4 Set up `apps/api` — Node.js + Express + TypeScript, `ts-node-dev` for dev, `jest` for tests
+- [x] 1.5 Set up `apps/mobile` — Expo (managed workflow + custom dev client), TypeScript, configure Metro bundler for monorepo path aliases; install `react-native-vision-camera` Expo plugin
+- [x] 1.6 Set up PostgreSQL + Redis locally via Docker Compose
+- [x] 1.7 Install and configure Prisma in `apps/api`: `prisma init`, define full schema (`users`, `trainer_trainee`, `invites`, `sessions`, `sets`, `form_scores`) with enums and relations, run `prisma migrate dev`
+- [x] 1.8 Install and configure Redis client (`ioredis`) in `apps/api`; create `RedisService` with get/set/del and TTL helpers
+- [x] 1.9 Configure environment variable management: `.env` files per package, `dotenv` on API, no secrets committed; document required env vars in a root `.env.example`
+- [x] 1.10 Add `typecheck`, `lint`, and `test` scripts to each package's `package.json` so CI can call them uniformly
+- [x] 1.11 Configure ESLint at the root with shared rules for TypeScript across all packages
 
 ---
 
-## 2. MediaPipe Technical Spike (MUST complete before Task 5)
+## 2. CI/CD Pipeline
+
+- [x] 2.1 Create `.github/workflows/ci.yml` — triggers on every push and on PRs to `dev` and `master`; runs typecheck + lint + test for `apps/api`, `apps/mobile`, and `packages/shared` in parallel jobs
+- [x] 2.2 Create `.github/workflows/cd.yml` — triggers on push to `master` only; placeholder deploy step until deployment target is confirmed
+- [ ] 2.3 Enable branch protection on `dev`: require CI to pass, require PR (no direct push)
+- [ ] 2.4 Enable branch protection on `master`: require CI to pass, require PR from `dev` only (no direct push)
+
+---
+
+## 3. MediaPipe Technical Spike (MUST complete before Task 6)
 
 - [ ] 2.1 Install `react-native-vision-camera` v3+ and configure iOS/Android permissions for camera
 - [ ] 2.2 Attempt to install and import `@mediapipe/tasks-vision` in the RN context; document compatibility result
