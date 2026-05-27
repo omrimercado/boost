@@ -1,0 +1,49 @@
+{
+  "expo": {
+    "name": "Boost",
+    "slug": "boost",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.boost.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Boost uses your camera to analyze exercise form.",
+        "NSMicrophoneUsageDescription": "Boost may use the microphone during video capture."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.boost.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Boost uses your camera to analyze exercise form.",
+          "enableMicrophonePermission": true,
+          "microphonePermissionText": "Boost may use the microphone during video capture."
+        }
+      ]
+    ],
+    "scheme": "boost",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
