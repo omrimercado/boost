@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [dev, master]
+
+jobs:
+  shared:
+    name: Shared Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run typecheck --workspace=packages/shared
+      - run: npm run lint --workspace=packages/shared
+
+  api:
+    name: API
+    runs-on: ubuntu-latest
+    needs: shared
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: boost
+          POSTGRES_PASSWORD: boost
+          POSTGRES_DB: boost_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://boost:boost@localhost:5432/boost_test
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-test-secret
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run typecheck --workspace=apps/api
+      - run: npm run lint --workspace=apps/api
+      - name: Run Prisma migrations
+        run: npx prisma migrate deploy
+        working-directory: apps/api
+      - run: npm run test --workspace=apps/api
+
+  mobile:
+    name: Mobile
+    runs-on: ubuntu-latest
+    needs: shared
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run typecheck --workspace=apps/mobile
+      - run: npm run lint --workspace=apps/mobile
+      - run: npm run test --workspace=apps/mobile

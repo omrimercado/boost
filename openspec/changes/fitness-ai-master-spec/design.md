@@ -199,6 +199,7 @@ PATCH  /api/v1/trainer/sessions/:sessionId/read      (mark session as read → c
 ## Resolved Decisions (for reference)
 
 | Decision | Choice | Notes |
+| CI/CD | GitHub Actions | CI on every push; CI required before merge to `dev` and `master`; CD on `master` push (deploy step TBD) |
 |---|---|---|
 | Mobile framework | Expo managed + dev client | Eject to bare only if MediaPipe spike requires it |
 | ORM | Prisma | Schema-first, auto-generated types, declarative migrations |

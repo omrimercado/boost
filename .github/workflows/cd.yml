@@ -1,0 +1,35 @@
+name: CD
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+
+      # Deployment target TBD — configure when deployment platform is chosen
+      # Uncomment and fill in the appropriate deploy step:
+      #
+      # Railway:
+      # - run: npx @railway/cli up --service api
+      #   env:
+      #     RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      #
+      # Render:
+      # - run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+      #
+      # AWS:
+      # - uses: aws-actions/configure-aws-credentials@v4
+      #   ...
+
+      - name: Deploy (not yet configured)
+        run: echo "Deployment target not configured. Set up in CD when platform is chosen."

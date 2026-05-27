@@ -9,10 +9,21 @@
 - [ ] 1.7 Install and configure Prisma in `apps/api`: `prisma init`, define full schema (`users`, `trainer_trainee`, `invites`, `sessions`, `sets`, `form_scores`) with enums and relations, run `prisma migrate dev`
 - [ ] 1.8 Install and configure Redis client (`ioredis`) in `apps/api`; create `RedisService` with get/set/del and TTL helpers
 - [ ] 1.9 Configure environment variable management: `.env` files per package, `dotenv` on API, no secrets committed; document required env vars in a root `.env.example`
+- [ ] 1.10 Add `typecheck`, `lint`, and `test` scripts to each package's `package.json` so CI can call them uniformly
+- [ ] 1.11 Configure ESLint at the root with shared rules for TypeScript across all packages
 
 ---
 
-## 2. MediaPipe Technical Spike (MUST complete before Task 5)
+## 2. CI/CD Pipeline
+
+- [ ] 2.1 Create `.github/workflows/ci.yml` — triggers on every push and on PRs to `dev` and `master`; runs typecheck + lint + test for `apps/api`, `apps/mobile`, and `packages/shared` in parallel jobs
+- [ ] 2.2 Create `.github/workflows/cd.yml` — triggers on push to `master` only; placeholder deploy step until deployment target is confirmed
+- [ ] 2.3 Enable branch protection on `dev`: require CI to pass, require PR (no direct push)
+- [ ] 2.4 Enable branch protection on `master`: require CI to pass, require PR from `dev` only (no direct push)
+
+---
+
+## 3. MediaPipe Technical Spike (MUST complete before Task 6)
 
 - [ ] 2.1 Install `react-native-vision-camera` v3+ and configure iOS/Android permissions for camera
 - [ ] 2.2 Attempt to install and import `@mediapipe/tasks-vision` in the RN context; document compatibility result
