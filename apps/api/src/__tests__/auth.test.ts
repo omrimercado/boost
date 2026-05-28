@@ -500,7 +500,7 @@ describe('POST /auth/reset-password', () => {
 describe('requireAuth middleware', () => {
   // Attach a protected test route to verify the middleware in isolation
   beforeAll(() => {
-    const { requireAuth } = require('../middleware/auth.middleware') as typeof import('../middleware/auth.middleware');
+    const { requireAuth } = await import('../middleware/auth.middleware');
     app.get('/test-protected', requireAuth, (_req, res) => res.json({ ok: true }));
   });
 
