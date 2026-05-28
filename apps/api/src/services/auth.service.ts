@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { randomBytes, randomUUID } from 'crypto';
-import type { UserRole } from '@shared/types';
-import { ACCESS_TOKEN_TTL_MINUTES, REFRESH_TOKEN_TTL_DAYS, RESET_TOKEN_TTL_HOURS } from '@shared/constants';
+import type { UserRole } from '@boost/shared';
+import { ACCESS_TOKEN_TTL_MINUTES, REFRESH_TOKEN_TTL_DAYS, RESET_TOKEN_TTL_HOURS } from '@boost/shared';
 import { redisService } from './redis.service';
 
 export interface AccessTokenPayload {

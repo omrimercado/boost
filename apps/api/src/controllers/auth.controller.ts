@@ -3,8 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../lib/prisma';
 import { authService } from '../services/auth.service';
 import { emailService } from '../services/email.service';
-import type { UserRole } from '@shared/types';
-import type { AuthResponse, RefreshResponse } from '@shared/api';
+import type { UserRole, AuthResponse, RefreshResponse } from '@boost/shared';
 
 const BCRYPT_ROUNDS = 12;
 

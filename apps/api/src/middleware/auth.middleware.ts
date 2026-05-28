@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/auth.service';
-import type { UserRole } from '@shared/types';
+import type { UserRole } from '@boost/shared';
 
 export interface AuthRequest extends Request {
   user?: { id: string; role: UserRole };
