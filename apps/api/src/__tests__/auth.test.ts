@@ -20,6 +20,7 @@ jest.mock('../services/redis.service', () => ({
     set: jest.fn(),
     del: jest.fn(),
     exists: jest.fn(),
+    getdel: jest.fn(),
   },
   default: {},
 }));
@@ -50,6 +51,7 @@ const mockRedisGet = redisService.get as jest.Mock;
 const mockRedisSet = redisService.set as jest.Mock;
 const mockRedisDel = redisService.del as jest.Mock;
 const mockRedisExists = redisService.exists as jest.Mock;
+const mockRedisGetdel = redisService.getdel as jest.Mock;
 const mockSendEmail = emailService.sendPasswordResetEmail as jest.Mock;
 const mockBcryptCompare = bcrypt.compare as jest.Mock;
 
@@ -92,6 +94,7 @@ beforeEach(() => {
   mockRedisDel.mockResolvedValue(1);
   mockRedisGet.mockResolvedValue(null);
   mockRedisExists.mockResolvedValue(0);
+  mockRedisGetdel.mockResolvedValue(null);
   mockSendEmail.mockResolvedValue(undefined);
 });
 
@@ -421,7 +424,7 @@ describe('POST /auth/forgot-password', () => {
 describe('POST /auth/reset-password', () => {
   it('200 — valid token updates the password and deletes the token', async () => {
     const resetToken = 'a'.repeat(64); // 32 bytes hex = 64 chars
-    mockRedisGet.mockResolvedValueOnce(TEST_USER_ID); // token found
+    mockRedisGetdel.mockResolvedValueOnce(TEST_USER_ID); // atomic get+delete
     mockUpdate.mockResolvedValueOnce(mockDbUser);
 
     const res = await request(app).post('/auth/reset-password').send({
@@ -434,12 +437,11 @@ describe('POST /auth/reset-password', () => {
       where: { id: TEST_USER_ID },
       data: { passwordHash: '$hashed_password' },
     });
-    // Token consumed — deleted from Redis
-    expect(mockRedisDel).toHaveBeenCalledWith(`reset:${resetToken}`);
+    expect(mockRedisGetdel).toHaveBeenCalledWith(`reset:${resetToken}`);
   });
 
   it('400 — invalid or expired token (not in Redis)', async () => {
-    mockRedisGet.mockResolvedValueOnce(null); // token not found / expired
+    mockRedisGetdel.mockResolvedValueOnce(null); // token not found / expired
 
     const res = await request(app).post('/auth/reset-password').send({
       token: 'expiredtoken',
@@ -453,16 +455,16 @@ describe('POST /auth/reset-password', () => {
 
   it('400 — token can only be used once (consumed on first use)', async () => {
     const resetToken = 'b'.repeat(64);
-    // First call: token exists
-    mockRedisGet.mockResolvedValueOnce(TEST_USER_ID);
+    // First call: getdel atomically returns and removes the token
+    mockRedisGetdel.mockResolvedValueOnce(TEST_USER_ID);
     mockUpdate.mockResolvedValueOnce(mockDbUser);
     await request(app).post('/auth/reset-password').send({
       token: resetToken,
       password: 'NewPassword1',
     });
 
-    // Second call: token already consumed (Redis returns null)
-    mockRedisGet.mockResolvedValueOnce(null);
+    // Second call: token already consumed (getdel returns null)
+    mockRedisGetdel.mockResolvedValueOnce(null);
     const res = await request(app).post('/auth/reset-password').send({
       token: resetToken,
       password: 'AnotherPass1',

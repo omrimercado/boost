@@ -73,10 +73,6 @@ export const authService = {
   },
 
   async consumeResetToken(token: string): Promise<string | null> {
-    const userId = await redisService.get(`reset:${token}`);
-    if (userId) {
-      await redisService.del(`reset:${token}`);
-    }
-    return userId;
+    return redisService.getdel(`reset:${token}`);
   },
 };

@@ -7,7 +7,7 @@ module.exports = {
   rootDir: 'src',
   testMatch: ['**/*.test.ts'],
   moduleNameMapper: {
-    '^@shared/(.*)$': path.resolve(__dirname, '../../packages/shared/src/$1'),
+    '^@boost/shared$': path.resolve(__dirname, '../../packages/shared/src/index.ts'),
   },
   transform: {
     '^.+\\.tsx?$': [

@@ -25,6 +25,8 @@ export const redisService = {
   keys: (pattern: string) => redis.keys(pattern),
 
   exists: (key: string) => redis.exists(key),
+
+  getdel: (key: string) => redis.getdel(key),
 };
 
 export default redis;
