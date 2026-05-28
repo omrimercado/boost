@@ -11,10 +11,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "@shared/*": ["packages/shared/src/*"]
-    }
+    "baseUrl": "."
   },
   "exclude": ["node_modules", "apps/mobile"]
 }

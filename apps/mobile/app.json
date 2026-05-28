@@ -39,6 +39,12 @@
           "enableMicrophonePermission": true,
           "microphonePermissionText": "Boost may use the microphone during video capture."
         }
+      ],
+      [
+        "react-native-fast-tflite",
+        {
+          "enableCoreMLDelegate": false
+        }
       ]
     ],
     "scheme": "boost",

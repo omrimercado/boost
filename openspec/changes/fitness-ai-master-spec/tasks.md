@@ -25,11 +25,11 @@
 
 ## 3. MediaPipe Technical Spike (MUST complete before Task 6)
 
-- [ ] 2.1 Install `react-native-vision-camera` v3+ and configure iOS/Android permissions for camera
-- [ ] 2.2 Attempt to install and import `@mediapipe/tasks-vision` in the RN context; document compatibility result
-- [ ] 2.3 Write a minimal frame processor plugin that receives camera frames and logs a pose landmark count to the console on a real Android device (iOS simulator has no camera — Android is the validation target for MVP)
-- [ ] 2.4 If 2.2 fails: evaluate `react-native-tensorflow-lite` or TensorFlow.js RN pose detection as fallback; update pose-estimation spec with chosen approach
-- [ ] 2.5 Document spike result and chosen MediaPipe integration path in `docs/mediapipe-spike.md`
+- [x] 2.1 Install `react-native-vision-camera` v3+ and configure iOS/Android permissions for camera
+- [x] 2.2 Attempt to install and import `@mediapipe/tasks-vision` in the RN context; document compatibility result
+- [x] 2.3 Write a minimal frame processor plugin that receives camera frames and logs a pose landmark count to the console on a real Android device (iOS simulator has no camera — Android is the validation target for MVP)
+- [x] 2.4 If 2.2 fails: evaluate `react-native-tensorflow-lite` or TensorFlow.js RN pose detection as fallback; update pose-estimation spec with chosen approach
+- [x] 2.5 Document spike result and chosen MediaPipe integration path in `docs/mediapipe-spike.md`
 
 ---
 

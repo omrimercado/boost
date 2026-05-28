@@ -29,6 +29,10 @@ coverage/
 .DS_Store
 Thumbs.db
 
+# TFLite model binaries (download separately, see docs/mediapipe-spike.md)
+apps/mobile/assets/models/*.tflite
+apps/mobile/assets/models/*.task
+
 # Logs
 *.log
 npm-debug.log*

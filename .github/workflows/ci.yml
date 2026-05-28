@@ -61,6 +61,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci --loglevel=error
+      - run: npm run build --workspace=packages/shared
       - run: npm run typecheck --workspace=apps/api
       - run: npm run lint --workspace=apps/api
       - name: Run Prisma migrations

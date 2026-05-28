@@ -77,10 +77,12 @@ The system SHALL compute an overall confidence level for the pose detection duri
 ### Requirement: Pose estimation spike must be validated before mobile recording is built
 The team SHALL execute a 1-day technical spike to validate that `@mediapipe/tasks-vision` (or an equivalent library) works within `react-native-vision-camera` frame processors on both iOS and Android. Implementation of all pose estimation and recording features SHALL NOT begin until the spike result is confirmed.
 
+**Spike result (2026-05-28):** `@mediapipe/tasks-vision` is incompatible with React Native — it requires WebAssembly and browser APIs unavailable in Hermes. The chosen implementation path is `react-native-fast-tflite` with the BlazePose Lite TFLite model, integrated via VisionCamera v4 frame processor worklets. See `docs/mediapipe-spike.md` for full details.
+
 #### Scenario: Spike validates MediaPipe in RN
 - **WHEN** the spike produces a working frame processor that logs joint angle values on a real device
 - **THEN** implementation proceeds using that library and integration approach
 
-#### Scenario: Spike finds MediaPipe incompatible
+#### Scenario: Spike finds MediaPipe incompatible ✅ (this path was taken)
 - **WHEN** the spike cannot produce working pose detection in RN within 1 day
-- **THEN** the team evaluates fallback paths (TensorFlow.js React Native, native wrappers) before implementation begins — the spec is updated with the chosen fallback
+- **THEN** the team evaluates fallback paths (TensorFlow.js React Native, native wrappers) before implementation begins — **chosen fallback: `react-native-fast-tflite` + BlazePose Lite TFLite model**
