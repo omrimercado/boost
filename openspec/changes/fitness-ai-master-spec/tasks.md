@@ -48,11 +48,11 @@
 
 ## 4. Backend: Invite & Trainer–Trainee Linking API
 
-- [ ] 4.1 Set up Resend SDK in `apps/api`, configure sender domain, create email template for trainer invite
-- [ ] 4.2 Implement `POST /api/v1/invites` — trainer sends invite: validate email, create `invites` + `trainer_trainee` (pending) records, send email via Resend
-- [ ] 4.3 Handle edge cases in invite send: email already linked to active trainee, email already has account, duplicate pending invite (resend with new token)
-- [ ] 4.4 Implement `GET /api/v1/invites/:token` — validate token (exists, not expired, not used), return trainer name and invite email
-- [ ] 4.5 Implement `POST /api/v1/invites/:token/accept` — register trainee + link to trainer in a single DB transaction; return tokens
+- [x] 4.1 Set up Resend SDK in `apps/api`, configure sender domain, create email template for trainer invite
+- [x] 4.2 Implement `POST /api/v1/invites` — trainer sends invite: validate email, create `invites` + `trainer_trainee` (pending) records, send email via Resend
+- [x] 4.3 Handle edge cases in invite send: email already linked to active trainee, email already has account, duplicate pending invite (resend with new token)
+- [x] 4.4 Implement `GET /api/v1/invites/:token` — validate token (exists, not expired, not used), return trainer name and invite email
+- [x] 4.5 Implement `POST /api/v1/invites/:token/accept` — register trainee + link to trainer in a single DB transaction; return tokens
 - [x] 4.6 Configure Resend for password reset email template (reuse Resend setup from 4.1)
 
 ---
