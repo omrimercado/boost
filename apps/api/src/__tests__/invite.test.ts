@@ -61,7 +61,6 @@ const mockLinkUpdate = prisma.trainerTrainee.update as jest.Mock;
 const mockInviteFindUnique = prisma.invite.findUnique as jest.Mock;
 const mockInviteCreate = prisma.invite.create as jest.Mock;
 const mockInviteUpdate = prisma.invite.update as jest.Mock;
-const mockInviteUpdateMany = prisma.invite.updateMany as jest.Mock;
 const mockTransaction = prisma.$transaction as jest.Mock;
 const mockRedisSet = redisService.set as jest.Mock;
 const mockRedisExists = redisService.exists as jest.Mock;
