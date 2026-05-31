@@ -1,6 +1,7 @@
 import type { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../lib/prisma';
+import type { Prisma } from '@prisma/client';
 import { inviteService } from '../services/invite.service';
 import { authService } from '../services/auth.service';
 import { emailService } from '../services/email.service';
@@ -56,7 +57,7 @@ export const inviteController = {
         }),
       ]);
     } else {
-      await prisma.$transaction(async (tx) => {
+      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         const link = await tx.trainerTrainee.create({
           data: { trainerId, inviteEmail: email },
         });
@@ -130,7 +131,7 @@ export const inviteController = {
 
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-    const user = await prisma.$transaction(async (tx) => {
+    const user = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const newUser = await tx.user.create({
         data: { email: invite.email, passwordHash, role: 'trainee' },
       });
