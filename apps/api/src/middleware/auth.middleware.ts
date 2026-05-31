@@ -24,3 +24,17 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
   req.user = { id: payload.sub, role: payload.role };
   next();
 }
+
+export function requireRole(...roles: UserRole[]) {
+  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+      return;
+    }
+    if (!roles.includes(req.user.role)) {
+      res.status(403).json({ error: 'FORBIDDEN', message: 'Insufficient permissions' });
+      return;
+    }
+    next();
+  };
+}

@@ -75,4 +75,12 @@ export const authService = {
   async consumeResetToken(token: string): Promise<string | null> {
     return redisService.getdel(`reset:${token}`);
   },
+
+  async revokeAllRefreshTokens(userId: string): Promise<void> {
+    // TODO: replace KEYS with SCAN before production — KEYS is O(N) over entire keyspace
+    const keys = await redisService.keys(`rt:${userId}:*`);
+    if (keys.length > 0) {
+      await redisService.del(...keys);
+    }
+  },
 };

@@ -35,13 +35,13 @@
 
 ## 3. Backend: Auth API
 
-- [ ] 3.1 Implement `POST /api/v1/auth/register` — validate email/password, hash password (bcrypt), create user via Prisma, issue JWT access token (15min) + store hashed refresh token in Redis with 30-day TTL
-- [ ] 3.2 Implement `POST /api/v1/auth/login` — validate credentials, issue tokens; store hashed refresh token in Redis (key: `refresh:<userId>:<tokenId>`)
-- [ ] 3.3 Implement `POST /api/v1/auth/refresh` — look up hashed token in Redis, validate, issue new access token; rotate refresh token (delete old key, store new one)
-- [ ] 3.4 Implement `POST /api/v1/auth/logout` — delete refresh token key from Redis
-- [ ] 3.5 Implement JWT middleware: verify access token on protected routes, attach `req.user` with id and role
+- [x] 3.1 Implement `POST /api/v1/auth/register` — validate email/password, hash password (bcrypt), create user via Prisma, issue JWT access token (15min) + store hashed refresh token in Redis with 30-day TTL
+- [x] 3.2 Implement `POST /api/v1/auth/login` — validate credentials, issue tokens; store hashed refresh token in Redis (key: `refresh:<userId>:<tokenId>`)
+- [x] 3.3 Implement `POST /api/v1/auth/refresh` — look up hashed token in Redis, validate, issue new access token; rotate refresh token (delete old key, store new one)
+- [x] 3.4 Implement `POST /api/v1/auth/logout` — delete refresh token key from Redis
+- [x] 3.5 Implement JWT middleware: verify access token on protected routes, attach `req.user` with id and role
 - [ ] 3.6 Implement role-check middleware: `requireRole('trainer')` and `requireRole('trainee')` guards
-- [ ] 3.7 Implement `POST /api/v1/auth/forgot-password` — generate 1-hour reset token, store in Redis, send email via Resend
+- [x] 3.7 Implement `POST /api/v1/auth/forgot-password` — generate 1-hour reset token, store in Redis, send email via Resend
 - [ ] 3.8 Implement `POST /api/v1/auth/reset-password` — validate reset token in Redis, update password hash via Prisma, delete all `refresh:<userId>:*` keys from Redis
 
 ---
@@ -53,7 +53,7 @@
 - [ ] 4.3 Handle edge cases in invite send: email already linked to active trainee, email already has account, duplicate pending invite (resend with new token)
 - [ ] 4.4 Implement `GET /api/v1/invites/:token` — validate token (exists, not expired, not used), return trainer name and invite email
 - [ ] 4.5 Implement `POST /api/v1/invites/:token/accept` — register trainee + link to trainer in a single DB transaction; return tokens
-- [ ] 4.6 Configure Resend for password reset email template (reuse Resend setup from 4.1)
+- [x] 4.6 Configure Resend for password reset email template (reuse Resend setup from 4.1)
 
 ---
 

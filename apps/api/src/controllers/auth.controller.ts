@@ -130,6 +130,7 @@ export const authController = {
 
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
     await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+    await authService.revokeAllRefreshTokens(userId);
 
     res.status(200).json({ data: { message: 'Password reset successfully' } });
   },
