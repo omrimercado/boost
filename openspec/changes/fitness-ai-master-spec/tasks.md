@@ -59,12 +59,12 @@
 
 ## 5. Backend: Session & Set Logging API
 
-- [ ] 5.1 Implement `POST /api/v1/sessions` — create session with client-provided UUID (idempotent); trainee role required
-- [ ] 5.2 Implement `PATCH /api/v1/sessions/:id` — end session (set `ended_at`); validate trainee owns session
-- [ ] 5.3 Implement `POST /api/v1/sessions/:id/sets` — create set with client-provided UUID (idempotent upsert); validate session belongs to trainee
-- [ ] 5.4 Implement `POST /api/v1/sets/:id/form-score` — attach form score to set; validate set belongs to trainee; reject if score already exists
-- [ ] 5.5 Implement `GET /api/v1/sessions` — trainee gets own sessions list; trainer gets sessions for a specific traineeId query param
-- [ ] 5.6 Implement `GET /api/v1/sessions/:id` — full session detail with sets and form scores; enforce ownership (trainee own, or trainer→linked trainee)
+- [x] 5.1 Implement `POST /api/v1/sessions` — create session with client-provided UUID (idempotent); trainee role required
+- [x] 5.2 Implement `PATCH /api/v1/sessions/:id` — end session (set `ended_at`); validate trainee owns session
+- [x] 5.3 Implement `POST /api/v1/sessions/:id/sets` — create set with client-provided UUID (idempotent upsert); validate session belongs to trainee
+- [x] 5.4 Implement `POST /api/v1/sets/:id/form-score` — attach form score to set; validate set belongs to trainee; reject if score already exists
+- [x] 5.5 Implement `GET /api/v1/sessions` — trainee gets own sessions list; trainer gets sessions for a specific traineeId query param
+- [x] 5.6 Implement `GET /api/v1/sessions/:id` — full session detail with sets and form scores; enforce ownership (trainee own, or trainer→linked trainee)
 
 ---
 

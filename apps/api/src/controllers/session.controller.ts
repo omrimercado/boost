@@ -1,7 +1,10 @@
 import type { Response } from 'express';
+import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import type { AuthRequest } from '../middleware/auth.middleware';
 import type { Session, SessionSet, FormScore } from '@boost/shared';
+
+type SetWithFormScore = Prisma.SetGetPayload<{ include: { formScore: true } }>;
 
 function serializeSession(s: {
   id: string;
@@ -262,7 +265,7 @@ export const sessionController = {
 
     const serialized = {
       ...serializeSession(session),
-      sets: session.sets.map((s) => ({
+      sets: session.sets.map((s: SetWithFormScore) => ({
         ...serializeSet(s),
         formScore: s.formScore ? serializeFormScore(s.formScore) : null,
       })),
