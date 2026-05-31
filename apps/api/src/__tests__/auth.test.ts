@@ -1,3 +1,4 @@
+/// <reference types="jest" />
 import request from 'supertest';
 import jwt from 'jsonwebtoken';
 
@@ -19,6 +20,7 @@ jest.mock('../services/redis.service', () => ({
     get: jest.fn(),
     set: jest.fn(),
     del: jest.fn(),
+    keys: jest.fn(),
     exists: jest.fn(),
     getdel: jest.fn(),
   },
@@ -50,6 +52,7 @@ const mockUpdate = prisma.user.update as jest.Mock;
 const mockRedisGet = redisService.get as jest.Mock;
 const mockRedisSet = redisService.set as jest.Mock;
 const mockRedisDel = redisService.del as jest.Mock;
+const mockRedisKeys = redisService.keys as jest.Mock;
 const mockRedisExists = redisService.exists as jest.Mock;
 const mockRedisGetdel = redisService.getdel as jest.Mock;
 const mockSendEmail = emailService.sendPasswordResetEmail as jest.Mock;
@@ -93,6 +96,7 @@ beforeEach(() => {
   mockRedisSet.mockResolvedValue('OK');
   mockRedisDel.mockResolvedValue(1);
   mockRedisGet.mockResolvedValue(null);
+  mockRedisKeys.mockResolvedValue([]);
   mockRedisExists.mockResolvedValue(0);
   mockRedisGetdel.mockResolvedValue(null);
   mockSendEmail.mockResolvedValue(undefined);
@@ -422,9 +426,11 @@ describe('POST /auth/forgot-password', () => {
 // POST /auth/reset-password
 // ---------------------------------------------------------------------------
 describe('POST /auth/reset-password', () => {
-  it('200 — valid token updates the password and deletes the token', async () => {
+  it('200 — valid token updates the password, deletes reset token, and revokes all refresh tokens', async () => {
     const resetToken = 'a'.repeat(64); // 32 bytes hex = 64 chars
+    const existingRtKeys = [`rt:${TEST_USER_ID}:jti-1`, `rt:${TEST_USER_ID}:jti-2`];
     mockRedisGetdel.mockResolvedValueOnce(TEST_USER_ID); // atomic get+delete
+    mockRedisKeys.mockResolvedValueOnce(existingRtKeys);
     mockUpdate.mockResolvedValueOnce(mockDbUser);
 
     const res = await request(app).post('/auth/reset-password').send({
@@ -438,6 +444,23 @@ describe('POST /auth/reset-password', () => {
       data: { passwordHash: '$hashed_password' },
     });
     expect(mockRedisGetdel).toHaveBeenCalledWith(`reset:${resetToken}`);
+    expect(mockRedisKeys).toHaveBeenCalledWith(`rt:${TEST_USER_ID}:*`);
+    expect(mockRedisDel).toHaveBeenCalledWith(...existingRtKeys);
+  });
+
+  it('200 — valid token with no active sessions still succeeds', async () => {
+    const resetToken = 'c'.repeat(64);
+    mockRedisGetdel.mockResolvedValueOnce(TEST_USER_ID);
+    mockRedisKeys.mockResolvedValueOnce([]); // no active refresh tokens
+    mockUpdate.mockResolvedValueOnce(mockDbUser);
+
+    const res = await request(app).post('/auth/reset-password').send({
+      token: resetToken,
+      password: 'NewPassword1',
+    });
+
+    expect(res.status).toBe(200);
+    expect(mockRedisDel).not.toHaveBeenCalled();
   });
 
   it('400 — invalid or expired token (not in Redis)', async () => {
@@ -502,8 +525,10 @@ describe('POST /auth/reset-password', () => {
 describe('requireAuth middleware', () => {
   // Attach a protected test route to verify the middleware in isolation
   beforeAll(async () => {
-    const { requireAuth } = await import('../middleware/auth.middleware');
+    const { requireAuth, requireRole } = await import('../middleware/auth.middleware');
     app.get('/test-protected', requireAuth, (_req, res) => res.json({ ok: true }));
+    app.get('/test-trainer-only', requireAuth, requireRole('trainer'), (_req, res) => res.json({ ok: true }));
+    app.get('/test-trainee-only', requireAuth, requireRole('trainee'), (_req, res) => res.json({ ok: true }));
   });
 
   it('401 — no Authorization header', async () => {
@@ -550,5 +575,49 @@ describe('requireAuth middleware', () => {
       .set('Authorization', `Bearer ${validToken}`);
     expect(res.status).toBe(200);
     expect(res.body.ok).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// requireRole middleware
+// ---------------------------------------------------------------------------
+describe('requireRole middleware', () => {
+  it('200 — trainer token passes trainer-only route', async () => {
+    const token = jwt.sign({ sub: TEST_USER_ID, role: 'trainer' }, ACCESS_SECRET, { expiresIn: '15m' });
+    const res = await request(app)
+      .get('/test-trainer-only')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+  });
+
+  it('403 — trainee token rejected on trainer-only route', async () => {
+    const token = jwt.sign({ sub: TEST_USER_ID, role: 'trainee' }, ACCESS_SECRET, { expiresIn: '15m' });
+    const res = await request(app)
+      .get('/test-trainer-only')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(403);
+    expect(res.body.error).toBe('FORBIDDEN');
+  });
+
+  it('200 — trainee token passes trainee-only route', async () => {
+    const token = jwt.sign({ sub: TEST_USER_ID, role: 'trainee' }, ACCESS_SECRET, { expiresIn: '15m' });
+    const res = await request(app)
+      .get('/test-trainee-only')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+  });
+
+  it('403 — trainer token rejected on trainee-only route', async () => {
+    const token = jwt.sign({ sub: TEST_USER_ID, role: 'trainer' }, ACCESS_SECRET, { expiresIn: '15m' });
+    const res = await request(app)
+      .get('/test-trainee-only')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(403);
+    expect(res.body.error).toBe('FORBIDDEN');
+  });
+
+  it('401 — unauthenticated request on role-guarded route', async () => {
+    const res = await request(app).get('/test-trainer-only');
+    expect(res.status).toBe(401);
   });
 });
