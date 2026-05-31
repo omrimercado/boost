@@ -582,6 +582,12 @@ describe('requireAuth middleware', () => {
 // requireRole middleware
 // ---------------------------------------------------------------------------
 describe('requireRole middleware', () => {
+  beforeAll(async () => {
+    const { requireAuth, requireRole } = await import('../middleware/auth.middleware');
+    app.get('/test-trainer-only', requireAuth, requireRole('trainer'), (_req, res) => res.json({ ok: true }));
+    app.get('/test-trainee-only', requireAuth, requireRole('trainee'), (_req, res) => res.json({ ok: true }));
+  });
+
   it('200 — trainer token passes trainer-only route', async () => {
     const token = jwt.sign({ sub: TEST_USER_ID, role: 'trainer' }, ACCESS_SECRET, { expiresIn: '15m' });
     const res = await request(app)
