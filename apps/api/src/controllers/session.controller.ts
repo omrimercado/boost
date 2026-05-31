@@ -1,10 +1,26 @@
 import type { Response } from 'express';
-import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 import type { AuthRequest } from '../middleware/auth.middleware';
 import type { Session, SessionSet, FormScore } from '@boost/shared';
 
-type SetWithFormScore = Prisma.SetGetPayload<{ include: { formScore: true } }>;
+type SetWithFormScore = {
+  id: string;
+  sessionId: string;
+  exerciseName: string;
+  weightKg: { toNumber(): number } | null;
+  reps: number;
+  setNumber: number;
+  loggedAt: Date;
+  formScore: {
+    id: string;
+    setId: string;
+    scoreTier: string;
+    coachingText: string;
+    angleData: unknown;
+    confidenceLevel: { toNumber(): number } | null;
+    createdAt: Date;
+  } | null;
+};
 
 function serializeSession(s: {
   id: string;
