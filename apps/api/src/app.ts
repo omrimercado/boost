@@ -5,6 +5,8 @@ import helmet from 'helmet';
 import cors from 'cors';
 import authRouter from './routes/auth.routes';
 import inviteRouter from './routes/invite.routes';
+import sessionRouter from './routes/session.routes';
+import setRouter from './routes/set.routes';
 
 const app = express();
 
@@ -18,6 +20,8 @@ app.get('/health', (_req, res) => {
 
 app.use('/auth', authRouter);
 app.use('/invites', inviteRouter);
+app.use('/sessions', sessionRouter);
+app.use('/sets', setRouter);
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
