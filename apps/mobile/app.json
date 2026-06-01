@@ -15,10 +15,6 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.boost.app",
       "associatedDomains": ["applinks:boost.app"],
-      "infoPlist": {
-        "NSCameraUsageDescription": "Boost uses your camera to analyze exercise form.",
-        "NSMicrophoneUsageDescription": "Boost may use the microphone during video capture."
-      }
     },
     "android": {
       "adaptiveIcon": {
@@ -26,10 +22,6 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.boost.app",
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ],
       "intentFilters": [
         {
           "action": "VIEW",
@@ -46,21 +38,7 @@
       ]
     },
     "plugins": [
-      "expo-router",
-      [
-        "react-native-vision-camera",
-        {
-          "cameraPermissionText": "Boost uses your camera to analyze exercise form.",
-          "enableMicrophonePermission": true,
-          "microphonePermissionText": "Boost may use the microphone during video capture."
-        }
-      ],
-      [
-        "react-native-fast-tflite",
-        {
-          "enableCoreMLDelegate": false
-        }
-      ]
+      "expo-router"
     ],
     "scheme": "boost",
     "experiments": {

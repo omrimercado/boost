@@ -22,6 +22,13 @@ apps/api/src/generated/
 apps/mobile/.expo/
 apps/mobile/expo-env.d.ts
 
+# Android build artifacts (android/ source files are committed)
+apps/mobile/android/.gradle/
+apps/mobile/android/app/build/
+apps/mobile/android/build/
+apps/mobile/android/**/*.apk
+apps/mobile/android/**/*.aab
+
 # Coverage
 coverage/
 
