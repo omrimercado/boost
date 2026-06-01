@@ -22,6 +22,16 @@ type SetWithFormScore = {
   } | null;
 };
 
+type TrainerTraineeWithTrainee = {
+  id: string;
+  trainerId: string;
+  traineeId: string | null;
+  inviteEmail: string;
+  status: string;
+  createdAt: Date;
+  trainee: { id: string; email: string } | null;
+};
+
 export const trainerController = {
   async getTrainees(req: AuthRequest, res: Response): Promise<void> {
     const trainerId = req.user!.id;
@@ -35,8 +45,8 @@ export const trainerController = {
     });
 
     const activeTraineeIds = links
-      .filter((l) => l.status === 'active' && l.traineeId != null)
-      .map((l) => l.traineeId as string);
+      .filter((l: TrainerTraineeWithTrainee) => l.status === 'active' && l.traineeId != null)
+      .map((l: TrainerTraineeWithTrainee) => l.traineeId as string);
 
     // Two parallel batch queries to avoid N+1 per trainee.
     // lastSessions is ordered DESC globally; the Map takes the first entry per trainee,
@@ -73,7 +83,7 @@ export const trainerController = {
       unreadRedCountMap.set(s.traineeId, (unreadRedCountMap.get(s.traineeId) ?? 0) + 1);
     }
 
-    const trainees = links.map((link) => ({
+    const trainees = links.map((link: TrainerTraineeWithTrainee) => ({
       linkId: link.id,
       traineeId: link.traineeId ?? null,
       email: link.trainee?.email ?? link.inviteEmail,
