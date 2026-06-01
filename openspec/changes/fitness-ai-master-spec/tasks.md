@@ -80,15 +80,15 @@
 
 ## 7. Mobile: Auth Screens & Navigation
 
-- [ ] 7.1 Install and configure React Navigation v7 with stack + tab navigators
-- [ ] 7.2 Install `react-native-keychain` for secure token storage; implement `AuthService` with store/retrieve/clear tokens
-- [ ] 7.3 Build Login screen: email + password form, call login API, store tokens, navigate to role-appropriate home
-- [ ] 7.4 Build Trainer Registration screen: email, password, role fixed to "trainer"
-- [ ] 7.5 Build Invite Registration screen: token passed via deep link, email pre-filled and read-only, trainer name displayed, password input only
-- [ ] 7.6 Configure universal links (iOS) and app links (Android) to handle `/invite/:token` deep link URLs
-- [ ] 7.7 Build Forgot Password screen + Reset Password screen (web-based reset flow via email link)
-- [ ] 7.8 Implement Zustand `useAuthStore` — state: `{ user, accessToken, isAuthenticated }`, actions: `login`, `logout`, `refreshToken`
-- [ ] 7.9 Implement silent token refresh interceptor (Axios or Fetch wrapper): on 401, attempt refresh, retry original request, or navigate to Login on refresh failure
+- [x] 7.1 Install and configure React Navigation v7 with stack + tab navigators
+- [x] 7.2 Install `react-native-keychain` for secure token storage; implement `AuthService` with store/retrieve/clear tokens
+- [x] 7.3 Build Login screen: email + password form, call login API, store tokens, navigate to role-appropriate home
+- [x] 7.4 Build Trainer Registration screen: email, password, role fixed to "trainer"
+- [x] 7.5 Build Invite Registration screen: token passed via deep link, email pre-filled and read-only, trainer name displayed, password input only
+- [x] 7.6 Configure universal links (iOS) and app links (Android) to handle `/invite/:token` deep link URLs
+- [x] 7.7 Build Forgot Password screen + Reset Password screen (web-based reset flow via email link)
+- [x] 7.8 Implement Zustand `useAuthStore` — state: `{ user, accessToken, isAuthenticated }`, actions: `login`, `logout`, `refreshToken`
+- [x] 7.9 Implement silent token refresh interceptor (Axios or Fetch wrapper): on 401, attempt refresh, retry original request, or navigate to Login on refresh failure
 
 ---
 
