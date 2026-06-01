@@ -70,11 +70,11 @@
 
 ## 6. Backend: Trainer Dashboard API
 
-- [ ] 6.1 Implement `GET /api/v1/trainer/trainees` — list all trainer's trainees with last session date, pending status, and unread Red alert count; optimize with a single JOIN query
-- [ ] 6.2 Implement `GET /api/v1/trainer/trainees/:traineeId/sessions` — paginated session history for one trainee; trainer must be linked to that trainee
-- [ ] 6.3 Implement `GET /api/v1/trainer/sessions/:sessionId` — session detail with all sets + form scores; trainer must be linked to trainee who owns session
-- [ ] 6.4 Implement `PATCH /api/v1/trainer/sessions/:sessionId/read` — mark session as read; clear Red alert for that session for this trainer
-- [ ] 6.5 Add a `session_reads` join table (trainer_id, session_id, read_at) to track read state per trainer per session; run migration
+- [x] 6.1 Implement `GET /api/v1/trainer/trainees` — list all trainer's trainees with last session date, pending status, and unread Red alert count; optimize with a single JOIN query
+- [x] 6.2 Implement `GET /api/v1/trainer/trainees/:traineeId/sessions` — paginated session history for one trainee; trainer must be linked to that trainee
+- [x] 6.3 Implement `GET /api/v1/trainer/sessions/:sessionId` — session detail with all sets + form scores; trainer must be linked to trainee who owns session
+- [x] 6.4 Implement `PATCH /api/v1/trainer/sessions/:sessionId/read` — mark session as read; clear Red alert for that session for this trainer
+- [x] 6.5 Add a `session_reads` join table (trainer_id, session_id, read_at) to track read state per trainer per session; run migration
 
 ---
 
