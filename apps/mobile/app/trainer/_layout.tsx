@@ -1,17 +1,5 @@
-import { Tabs } from 'expo-router';
+import { Stack } from 'expo-router';
 
 export default function TrainerLayout() {
-  return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#2563eb',
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{ title: 'Trainees' }}
-      />
-    </Tabs>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

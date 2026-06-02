@@ -133,7 +133,7 @@ describe('POST /invites', () => {
     mockInviteCreate.mockResolvedValueOnce({ id: INVITE_ID });
 
     const res = await request(app)
-      .post('/invites')
+      .post('/api/v1/invites')
       .set('Authorization', `Bearer ${makeTrainerToken()}`)
       .send({ email: INVITE_EMAIL });
 
@@ -156,7 +156,7 @@ describe('POST /invites', () => {
     mockTransaction.mockResolvedValueOnce(undefined);
 
     const res = await request(app)
-      .post('/invites')
+      .post('/api/v1/invites')
       .set('Authorization', `Bearer ${makeTrainerToken()}`)
       .send({ email: INVITE_EMAIL });
 
@@ -170,7 +170,7 @@ describe('POST /invites', () => {
     mockUserFindUnique.mockResolvedValueOnce({ id: TRAINEE_ID, email: INVITE_EMAIL }); // email taken
 
     const res = await request(app)
-      .post('/invites')
+      .post('/api/v1/invites')
       .set('Authorization', `Bearer ${makeTrainerToken()}`)
       .send({ email: INVITE_EMAIL });
 
@@ -185,7 +185,7 @@ describe('POST /invites', () => {
     mockLinkFindFirst.mockResolvedValueOnce({ id: LINK_ID, status: 'active' });
 
     const res = await request(app)
-      .post('/invites')
+      .post('/api/v1/invites')
       .set('Authorization', `Bearer ${makeTrainerToken()}`)
       .send({ email: INVITE_EMAIL });
 
@@ -195,14 +195,14 @@ describe('POST /invites', () => {
   });
 
   it('401 — unauthenticated request', async () => {
-    const res = await request(app).post('/invites').send({ email: INVITE_EMAIL });
+    const res = await request(app).post('/api/v1/invites').send({ email: INVITE_EMAIL });
     expect(res.status).toBe(401);
   });
 
   it('403 — trainee cannot send invites', async () => {
     const traineeToken = jwt.sign({ sub: TRAINEE_ID, role: 'trainee' }, ACCESS_SECRET, { expiresIn: '15m' });
     const res = await request(app)
-      .post('/invites')
+      .post('/api/v1/invites')
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ email: INVITE_EMAIL });
     expect(res.status).toBe(403);
@@ -211,7 +211,7 @@ describe('POST /invites', () => {
 
   it('400 — missing email', async () => {
     const res = await request(app)
-      .post('/invites')
+      .post('/api/v1/invites')
       .set('Authorization', `Bearer ${makeTrainerToken()}`)
       .send({});
     expect(res.status).toBe(400);
@@ -220,7 +220,7 @@ describe('POST /invites', () => {
 
   it('400 — invalid email format', async () => {
     const res = await request(app)
-      .post('/invites')
+      .post('/api/v1/invites')
       .set('Authorization', `Bearer ${makeTrainerToken()}`)
       .send({ email: 'not-an-email' });
     expect(res.status).toBe(400);
@@ -235,7 +235,7 @@ describe('GET /invites/:token', () => {
   it('200 — returns trainer name and invite email for valid token', async () => {
     mockInviteFindUnique.mockResolvedValueOnce(mockInviteRecord);
 
-    const res = await request(app).get(`/invites/${VALID_TOKEN}`);
+    const res = await request(app).get(`/api/v1/invites/${VALID_TOKEN}`);
 
     expect(res.status).toBe(200);
     expect(res.body.data.trainerName).toBe(TRAINER_EMAIL);
@@ -245,7 +245,7 @@ describe('GET /invites/:token', () => {
   it('404 — unknown token', async () => {
     mockInviteFindUnique.mockResolvedValueOnce(null);
 
-    const res = await request(app).get(`/invites/${VALID_TOKEN}`);
+    const res = await request(app).get(`/api/v1/invites/${VALID_TOKEN}`);
 
     expect(res.status).toBe(404);
     expect(res.body.error).toBe('NOT_FOUND');
@@ -254,7 +254,7 @@ describe('GET /invites/:token', () => {
   it('410 INVITE_USED — token already consumed', async () => {
     mockInviteFindUnique.mockResolvedValueOnce({ ...mockInviteRecord, usedAt: new Date() });
 
-    const res = await request(app).get(`/invites/${VALID_TOKEN}`);
+    const res = await request(app).get(`/api/v1/invites/${VALID_TOKEN}`);
 
     expect(res.status).toBe(410);
     expect(res.body.error).toBe('INVITE_USED');
@@ -263,7 +263,7 @@ describe('GET /invites/:token', () => {
   it('410 INVITE_EXPIRED — token past expiresAt', async () => {
     mockInviteFindUnique.mockResolvedValueOnce({ ...mockInviteRecord, expiresAt: pastDate });
 
-    const res = await request(app).get(`/invites/${VALID_TOKEN}`);
+    const res = await request(app).get(`/api/v1/invites/${VALID_TOKEN}`);
 
     expect(res.status).toBe(410);
     expect(res.body.error).toBe('INVITE_EXPIRED');
@@ -291,7 +291,7 @@ describe('POST /invites/:token/accept', () => {
     mockInviteUpdate.mockResolvedValueOnce({});
 
     const res = await request(app)
-      .post(`/invites/${VALID_TOKEN}/accept`)
+      .post(`/api/v1/invites/${VALID_TOKEN}/accept`)
       .send({ password: 'Password123' });
 
     expect(res.status).toBe(201);
@@ -307,7 +307,7 @@ describe('POST /invites/:token/accept', () => {
     mockInviteFindUnique.mockResolvedValueOnce(null);
 
     const res = await request(app)
-      .post(`/invites/${VALID_TOKEN}/accept`)
+      .post(`/api/v1/invites/${VALID_TOKEN}/accept`)
       .send({ password: 'Password123' });
 
     expect(res.status).toBe(404);
@@ -318,7 +318,7 @@ describe('POST /invites/:token/accept', () => {
     mockInviteFindUnique.mockResolvedValueOnce({ ...mockInviteRecord, usedAt: new Date() });
 
     const res = await request(app)
-      .post(`/invites/${VALID_TOKEN}/accept`)
+      .post(`/api/v1/invites/${VALID_TOKEN}/accept`)
       .send({ password: 'Password123' });
 
     expect(res.status).toBe(410);
@@ -329,7 +329,7 @@ describe('POST /invites/:token/accept', () => {
     mockInviteFindUnique.mockResolvedValueOnce({ ...mockInviteRecord, expiresAt: pastDate });
 
     const res = await request(app)
-      .post(`/invites/${VALID_TOKEN}/accept`)
+      .post(`/api/v1/invites/${VALID_TOKEN}/accept`)
       .send({ password: 'Password123' });
 
     expect(res.status).toBe(410);
@@ -341,7 +341,7 @@ describe('POST /invites/:token/accept', () => {
     mockUserFindUnique.mockResolvedValueOnce({ id: 'other-user', email: INVITE_EMAIL });
 
     const res = await request(app)
-      .post(`/invites/${VALID_TOKEN}/accept`)
+      .post(`/api/v1/invites/${VALID_TOKEN}/accept`)
       .send({ password: 'Password123' });
 
     expect(res.status).toBe(409);
@@ -349,14 +349,14 @@ describe('POST /invites/:token/accept', () => {
   });
 
   it('400 — missing password', async () => {
-    const res = await request(app).post(`/invites/${VALID_TOKEN}/accept`).send({});
+    const res = await request(app).post(`/api/v1/invites/${VALID_TOKEN}/accept`).send({});
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
   });
 
   it('400 — password shorter than 8 characters', async () => {
     const res = await request(app)
-      .post(`/invites/${VALID_TOKEN}/accept`)
+      .post(`/api/v1/invites/${VALID_TOKEN}/accept`)
       .send({ password: 'short' });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');

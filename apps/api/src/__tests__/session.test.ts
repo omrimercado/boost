@@ -133,7 +133,7 @@ describe('POST /sessions', () => {
     mockSessionCreate.mockResolvedValueOnce(mockSessionRecord);
 
     const res = await request(app)
-      .post('/sessions')
+      .post('/api/v1/sessions')
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ id: SESSION_ID, startedAt: '2024-06-01T10:00:00Z' });
 
@@ -148,7 +148,7 @@ describe('POST /sessions', () => {
     mockSessionFindUnique.mockResolvedValueOnce(mockSessionRecord);
 
     const res = await request(app)
-      .post('/sessions')
+      .post('/api/v1/sessions')
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ id: SESSION_ID, startedAt: '2024-06-01T10:00:00Z' });
 
@@ -161,7 +161,7 @@ describe('POST /sessions', () => {
     mockSessionFindUnique.mockResolvedValueOnce({ ...mockSessionRecord, traineeId: OTHER_TRAINEE_ID });
 
     const res = await request(app)
-      .post('/sessions')
+      .post('/api/v1/sessions')
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ id: SESSION_ID, startedAt: '2024-06-01T10:00:00Z' });
 
@@ -171,14 +171,14 @@ describe('POST /sessions', () => {
 
   it('401 — unauthenticated', async () => {
     const res = await request(app)
-      .post('/sessions')
+      .post('/api/v1/sessions')
       .send({ id: SESSION_ID, startedAt: '2024-06-01T10:00:00Z' });
     expect(res.status).toBe(401);
   });
 
   it('403 — trainer cannot create sessions', async () => {
     const res = await request(app)
-      .post('/sessions')
+      .post('/api/v1/sessions')
       .set('Authorization', `Bearer ${trainerToken}`)
       .send({ id: SESSION_ID, startedAt: '2024-06-01T10:00:00Z' });
     expect(res.status).toBe(403);
@@ -187,7 +187,7 @@ describe('POST /sessions', () => {
 
   it('400 — missing id', async () => {
     const res = await request(app)
-      .post('/sessions')
+      .post('/api/v1/sessions')
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ startedAt: '2024-06-01T10:00:00Z' });
     expect(res.status).toBe(400);
@@ -196,7 +196,7 @@ describe('POST /sessions', () => {
 
   it('400 — invalid UUID id', async () => {
     const res = await request(app)
-      .post('/sessions')
+      .post('/api/v1/sessions')
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ id: 'not-a-uuid', startedAt: '2024-06-01T10:00:00Z' });
     expect(res.status).toBe(400);
@@ -205,7 +205,7 @@ describe('POST /sessions', () => {
 
   it('400 — missing startedAt', async () => {
     const res = await request(app)
-      .post('/sessions')
+      .post('/api/v1/sessions')
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ id: SESSION_ID });
     expect(res.status).toBe(400);
@@ -214,7 +214,7 @@ describe('POST /sessions', () => {
 
   it('400 — invalid startedAt date', async () => {
     const res = await request(app)
-      .post('/sessions')
+      .post('/api/v1/sessions')
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ id: SESSION_ID, startedAt: 'not-a-date' });
     expect(res.status).toBe(400);
@@ -231,7 +231,7 @@ describe('PATCH /sessions/:id', () => {
     mockSessionUpdate.mockResolvedValueOnce(mockEndedSessionRecord);
 
     const res = await request(app)
-      .patch(`/sessions/${SESSION_ID}`)
+      .patch(`/api/v1/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${traineeToken}`);
 
     expect(res.status).toBe(200);
@@ -243,7 +243,7 @@ describe('PATCH /sessions/:id', () => {
     mockSessionFindUnique.mockResolvedValueOnce(null);
 
     const res = await request(app)
-      .patch(`/sessions/${SESSION_ID}`)
+      .patch(`/api/v1/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${traineeToken}`);
 
     expect(res.status).toBe(404);
@@ -254,7 +254,7 @@ describe('PATCH /sessions/:id', () => {
     mockSessionFindUnique.mockResolvedValueOnce({ ...mockSessionRecord, traineeId: OTHER_TRAINEE_ID });
 
     const res = await request(app)
-      .patch(`/sessions/${SESSION_ID}`)
+      .patch(`/api/v1/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${traineeToken}`);
 
     expect(res.status).toBe(403);
@@ -265,7 +265,7 @@ describe('PATCH /sessions/:id', () => {
     mockSessionFindUnique.mockResolvedValueOnce(mockEndedSessionRecord);
 
     const res = await request(app)
-      .patch(`/sessions/${SESSION_ID}`)
+      .patch(`/api/v1/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${traineeToken}`);
 
     expect(res.status).toBe(409);
@@ -273,13 +273,13 @@ describe('PATCH /sessions/:id', () => {
   });
 
   it('401 — unauthenticated', async () => {
-    const res = await request(app).patch(`/sessions/${SESSION_ID}`);
+    const res = await request(app).patch(`/api/v1/sessions/${SESSION_ID}`);
     expect(res.status).toBe(401);
   });
 
   it('403 — trainer cannot end sessions', async () => {
     const res = await request(app)
-      .patch(`/sessions/${SESSION_ID}`)
+      .patch(`/api/v1/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${trainerToken}`);
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('FORBIDDEN');
@@ -287,7 +287,7 @@ describe('PATCH /sessions/:id', () => {
 
   it('400 — invalid UUID in params', async () => {
     const res = await request(app)
-      .patch('/sessions/not-a-uuid')
+      .patch('/api/v1/sessions/not-a-uuid')
       .set('Authorization', `Bearer ${traineeToken}`);
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
@@ -312,7 +312,7 @@ describe('POST /sessions/:id/sets', () => {
     mockSetCreate.mockResolvedValueOnce(mockSetRecord);
 
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send(validSetBody);
 
@@ -328,7 +328,7 @@ describe('POST /sessions/:id/sets', () => {
     mockSetFindUnique.mockResolvedValueOnce(mockSetRecord);
 
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send(validSetBody);
 
@@ -343,7 +343,7 @@ describe('POST /sessions/:id/sets', () => {
     mockSetFindUnique.mockResolvedValueOnce({ ...mockSetRecord, sessionId: differentSessionId });
 
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send(validSetBody);
 
@@ -359,7 +359,7 @@ describe('POST /sessions/:id/sets', () => {
     mockSetCreate.mockResolvedValueOnce(setWithoutWeight);
 
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ id: SET_ID, exerciseName: 'squat', reps: 5, setNumber: 1 });
 
@@ -373,7 +373,7 @@ describe('POST /sessions/:id/sets', () => {
     mockSetCreate.mockResolvedValueOnce(mockSetRecord);
 
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ id: SET_ID, exerciseName: 'squat', reps: 5, setNumber: 1, loggedAt: '2024-06-01T10:10:00Z' });
 
@@ -387,7 +387,7 @@ describe('POST /sessions/:id/sets', () => {
     mockSessionFindUnique.mockResolvedValueOnce(null);
 
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send(validSetBody);
 
@@ -399,7 +399,7 @@ describe('POST /sessions/:id/sets', () => {
     mockSessionFindUnique.mockResolvedValueOnce({ ...mockSessionRecord, traineeId: OTHER_TRAINEE_ID });
 
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send(validSetBody);
 
@@ -409,14 +409,14 @@ describe('POST /sessions/:id/sets', () => {
 
   it('401 — unauthenticated', async () => {
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .send(validSetBody);
     expect(res.status).toBe(401);
   });
 
   it('403 — trainer cannot create sets', async () => {
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .set('Authorization', `Bearer ${trainerToken}`)
       .send(validSetBody);
     expect(res.status).toBe(403);
@@ -425,7 +425,7 @@ describe('POST /sessions/:id/sets', () => {
 
   it('400 — missing set id', async () => {
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ exerciseName: 'squat', reps: 5, setNumber: 1 });
     expect(res.status).toBe(400);
@@ -434,7 +434,7 @@ describe('POST /sessions/:id/sets', () => {
 
   it('400 — invalid exerciseName', async () => {
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ ...validSetBody, exerciseName: 'invalid_exercise' });
     expect(res.status).toBe(400);
@@ -443,7 +443,7 @@ describe('POST /sessions/:id/sets', () => {
 
   it('400 — reps must be positive integer', async () => {
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ ...validSetBody, reps: 0 });
     expect(res.status).toBe(400);
@@ -452,7 +452,7 @@ describe('POST /sessions/:id/sets', () => {
 
   it('400 — setNumber must be positive integer', async () => {
     const res = await request(app)
-      .post(`/sessions/${SESSION_ID}/sets`)
+      .post(`/api/v1/sessions/${SESSION_ID}/sets`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ ...validSetBody, setNumber: 0 });
     expect(res.status).toBe(400);
@@ -461,7 +461,7 @@ describe('POST /sessions/:id/sets', () => {
 
   it('400 — invalid session UUID in path', async () => {
     const res = await request(app)
-      .post('/sessions/not-a-uuid/sets')
+      .post('/api/v1/sessions/not-a-uuid/sets')
       .set('Authorization', `Bearer ${traineeToken}`)
       .send(validSetBody);
     expect(res.status).toBe(400);
@@ -491,7 +491,7 @@ describe('POST /sets/:id/form-score', () => {
     mockFormScoreCreate.mockResolvedValueOnce(mockFormScoreRecord);
 
     const res = await request(app)
-      .post(`/sets/${SET_ID}/form-score`)
+      .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send(validFormScoreBody);
 
@@ -508,7 +508,7 @@ describe('POST /sets/:id/form-score', () => {
     mockFormScoreCreate.mockResolvedValueOnce(formScoreWithoutConfidence);
 
     const res = await request(app)
-      .post(`/sets/${SET_ID}/form-score`)
+      .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ scoreTier: 'red', coachingText: 'Needs improvement', angleData: {} });
 
@@ -520,7 +520,7 @@ describe('POST /sets/:id/form-score', () => {
     mockSetFindUnique.mockResolvedValueOnce(null);
 
     const res = await request(app)
-      .post(`/sets/${SET_ID}/form-score`)
+      .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send(validFormScoreBody);
 
@@ -535,7 +535,7 @@ describe('POST /sets/:id/form-score', () => {
     });
 
     const res = await request(app)
-      .post(`/sets/${SET_ID}/form-score`)
+      .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send(validFormScoreBody);
 
@@ -550,7 +550,7 @@ describe('POST /sets/:id/form-score', () => {
     });
 
     const res = await request(app)
-      .post(`/sets/${SET_ID}/form-score`)
+      .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send(validFormScoreBody);
 
@@ -560,14 +560,14 @@ describe('POST /sets/:id/form-score', () => {
 
   it('401 — unauthenticated', async () => {
     const res = await request(app)
-      .post(`/sets/${SET_ID}/form-score`)
+      .post(`/api/v1/sets/${SET_ID}/form-score`)
       .send(validFormScoreBody);
     expect(res.status).toBe(401);
   });
 
   it('403 — trainer cannot add form scores', async () => {
     const res = await request(app)
-      .post(`/sets/${SET_ID}/form-score`)
+      .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${trainerToken}`)
       .send(validFormScoreBody);
     expect(res.status).toBe(403);
@@ -576,7 +576,7 @@ describe('POST /sets/:id/form-score', () => {
 
   it('400 — invalid scoreTier', async () => {
     const res = await request(app)
-      .post(`/sets/${SET_ID}/form-score`)
+      .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ ...validFormScoreBody, scoreTier: 'blue' });
     expect(res.status).toBe(400);
@@ -585,7 +585,7 @@ describe('POST /sets/:id/form-score', () => {
 
   it('400 — missing coachingText', async () => {
     const res = await request(app)
-      .post(`/sets/${SET_ID}/form-score`)
+      .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ scoreTier: 'green', angleData: {} });
     expect(res.status).toBe(400);
@@ -594,7 +594,7 @@ describe('POST /sets/:id/form-score', () => {
 
   it('400 — missing angleData', async () => {
     const res = await request(app)
-      .post(`/sets/${SET_ID}/form-score`)
+      .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
       .send({ scoreTier: 'green', coachingText: 'ok' });
     expect(res.status).toBe(400);
@@ -603,7 +603,7 @@ describe('POST /sets/:id/form-score', () => {
 
   it('400 — invalid UUID in params', async () => {
     const res = await request(app)
-      .post('/sets/not-a-uuid/form-score')
+      .post('/api/v1/sets/not-a-uuid/form-score')
       .set('Authorization', `Bearer ${traineeToken}`)
       .send(validFormScoreBody);
     expect(res.status).toBe(400);
@@ -619,7 +619,7 @@ describe('GET /sessions', () => {
     mockSessionFindMany.mockResolvedValueOnce([mockSessionRecord]);
 
     const res = await request(app)
-      .get('/sessions')
+      .get('/api/v1/sessions')
       .set('Authorization', `Bearer ${traineeToken}`);
 
     expect(res.status).toBe(200);
@@ -634,7 +634,7 @@ describe('GET /sessions', () => {
     mockSessionFindMany.mockResolvedValueOnce([]);
 
     const res = await request(app)
-      .get('/sessions')
+      .get('/api/v1/sessions')
       .set('Authorization', `Bearer ${traineeToken}`);
 
     expect(res.status).toBe(200);
@@ -646,7 +646,7 @@ describe('GET /sessions', () => {
     mockSessionFindMany.mockResolvedValueOnce([mockSessionRecord]);
 
     const res = await request(app)
-      .get(`/sessions?traineeId=${TRAINEE_ID}`)
+      .get(`/api/v1/sessions?traineeId=${TRAINEE_ID}`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -660,7 +660,7 @@ describe('GET /sessions', () => {
 
   it('400 — trainer without traineeId query param', async () => {
     const res = await request(app)
-      .get('/sessions')
+      .get('/api/v1/sessions')
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(400);
@@ -671,7 +671,7 @@ describe('GET /sessions', () => {
     mockLinkFindFirst.mockResolvedValueOnce(null);
 
     const res = await request(app)
-      .get(`/sessions?traineeId=${TRAINEE_ID}`)
+      .get(`/api/v1/sessions?traineeId=${TRAINEE_ID}`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(403);
@@ -679,13 +679,13 @@ describe('GET /sessions', () => {
   });
 
   it('401 — unauthenticated', async () => {
-    const res = await request(app).get('/sessions');
+    const res = await request(app).get('/api/v1/sessions');
     expect(res.status).toBe(401);
   });
 
   it('400 — invalid traineeId UUID format', async () => {
     const res = await request(app)
-      .get('/sessions?traineeId=not-a-uuid')
+      .get('/api/v1/sessions?traineeId=not-a-uuid')
       .set('Authorization', `Bearer ${trainerToken}`);
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
@@ -710,7 +710,7 @@ describe('GET /sessions/:id', () => {
     mockSessionFindUnique.mockResolvedValueOnce(mockSessionFull);
 
     const res = await request(app)
-      .get(`/sessions/${SESSION_ID}`)
+      .get(`/api/v1/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${traineeToken}`);
 
     expect(res.status).toBe(200);
@@ -727,7 +727,7 @@ describe('GET /sessions/:id', () => {
     });
 
     const res = await request(app)
-      .get(`/sessions/${SESSION_ID}`)
+      .get(`/api/v1/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${traineeToken}`);
 
     expect(res.status).toBe(200);
@@ -739,7 +739,7 @@ describe('GET /sessions/:id', () => {
     mockLinkFindFirst.mockResolvedValueOnce(mockLinkRecord);
 
     const res = await request(app)
-      .get(`/sessions/${SESSION_ID}`)
+      .get(`/api/v1/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -750,7 +750,7 @@ describe('GET /sessions/:id', () => {
     mockSessionFindUnique.mockResolvedValueOnce(null);
 
     const res = await request(app)
-      .get(`/sessions/${SESSION_ID}`)
+      .get(`/api/v1/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${traineeToken}`);
 
     expect(res.status).toBe(404);
@@ -761,7 +761,7 @@ describe('GET /sessions/:id', () => {
     mockSessionFindUnique.mockResolvedValueOnce({ ...mockSessionFull, traineeId: OTHER_TRAINEE_ID });
 
     const res = await request(app)
-      .get(`/sessions/${SESSION_ID}`)
+      .get(`/api/v1/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${traineeToken}`);
 
     expect(res.status).toBe(403);
@@ -773,7 +773,7 @@ describe('GET /sessions/:id', () => {
     mockLinkFindFirst.mockResolvedValueOnce(null);
 
     const res = await request(app)
-      .get(`/sessions/${SESSION_ID}`)
+      .get(`/api/v1/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(403);
@@ -781,13 +781,13 @@ describe('GET /sessions/:id', () => {
   });
 
   it('401 — unauthenticated', async () => {
-    const res = await request(app).get(`/sessions/${SESSION_ID}`);
+    const res = await request(app).get(`/api/v1/sessions/${SESSION_ID}`);
     expect(res.status).toBe(401);
   });
 
   it('400 — invalid UUID in params', async () => {
     const res = await request(app)
-      .get('/sessions/not-a-uuid')
+      .get('/api/v1/sessions/not-a-uuid')
       .set('Authorization', `Bearer ${traineeToken}`);
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');

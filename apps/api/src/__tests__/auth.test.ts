@@ -110,7 +110,7 @@ describe('POST /auth/register', () => {
     mockFindUnique.mockResolvedValueOnce(null);
     mockCreate.mockResolvedValueOnce(mockDbUser);
 
-    const res = await request(app).post('/auth/register').send({
+    const res = await request(app).post('/api/v1/auth/register').send({
       email: TEST_EMAIL,
       password: TEST_PASSWORD,
       role: 'trainer',
@@ -130,7 +130,7 @@ describe('POST /auth/register', () => {
     mockFindUnique.mockResolvedValueOnce(null);
     mockCreate.mockResolvedValueOnce(traineeUser);
 
-    const res = await request(app).post('/auth/register').send({
+    const res = await request(app).post('/api/v1/auth/register').send({
       email: 'trainee@example.com',
       password: TEST_PASSWORD,
       role: 'trainee',
@@ -143,7 +143,7 @@ describe('POST /auth/register', () => {
   it('409 — duplicate email', async () => {
     mockFindUnique.mockResolvedValueOnce(mockDbUser);
 
-    const res = await request(app).post('/auth/register').send({
+    const res = await request(app).post('/api/v1/auth/register').send({
       email: TEST_EMAIL,
       password: TEST_PASSWORD,
       role: 'trainer',
@@ -155,7 +155,7 @@ describe('POST /auth/register', () => {
   });
 
   it('400 — missing email', async () => {
-    const res = await request(app).post('/auth/register').send({
+    const res = await request(app).post('/api/v1/auth/register').send({
       password: TEST_PASSWORD,
       role: 'trainer',
     });
@@ -164,7 +164,7 @@ describe('POST /auth/register', () => {
   });
 
   it('400 — invalid email format', async () => {
-    const res = await request(app).post('/auth/register').send({
+    const res = await request(app).post('/api/v1/auth/register').send({
       email: 'not-an-email',
       password: TEST_PASSWORD,
       role: 'trainer',
@@ -174,7 +174,7 @@ describe('POST /auth/register', () => {
   });
 
   it('400 — password shorter than 8 characters', async () => {
-    const res = await request(app).post('/auth/register').send({
+    const res = await request(app).post('/api/v1/auth/register').send({
       email: TEST_EMAIL,
       password: 'short',
       role: 'trainer',
@@ -184,7 +184,7 @@ describe('POST /auth/register', () => {
   });
 
   it('400 — missing role', async () => {
-    const res = await request(app).post('/auth/register').send({
+    const res = await request(app).post('/api/v1/auth/register').send({
       email: TEST_EMAIL,
       password: TEST_PASSWORD,
     });
@@ -193,7 +193,7 @@ describe('POST /auth/register', () => {
   });
 
   it('400 — invalid role value', async () => {
-    const res = await request(app).post('/auth/register').send({
+    const res = await request(app).post('/api/v1/auth/register').send({
       email: TEST_EMAIL,
       password: TEST_PASSWORD,
       role: 'admin',
@@ -203,7 +203,7 @@ describe('POST /auth/register', () => {
   });
 
   it('400 — missing password', async () => {
-    const res = await request(app).post('/auth/register').send({
+    const res = await request(app).post('/api/v1/auth/register').send({
       email: TEST_EMAIL,
       role: 'trainer',
     });
@@ -220,7 +220,7 @@ describe('POST /auth/login', () => {
     mockFindUnique.mockResolvedValueOnce(mockDbUser);
     mockBcryptCompare.mockResolvedValueOnce(true);
 
-    const res = await request(app).post('/auth/login').send({
+    const res = await request(app).post('/api/v1/auth/login').send({
       email: TEST_EMAIL,
       password: TEST_PASSWORD,
     });
@@ -235,7 +235,7 @@ describe('POST /auth/login', () => {
   it('401 — email not registered', async () => {
     mockFindUnique.mockResolvedValueOnce(null);
 
-    const res = await request(app).post('/auth/login').send({
+    const res = await request(app).post('/api/v1/auth/login').send({
       email: 'nobody@example.com',
       password: TEST_PASSWORD,
     });
@@ -249,7 +249,7 @@ describe('POST /auth/login', () => {
     mockFindUnique.mockResolvedValueOnce(mockDbUser);
     mockBcryptCompare.mockResolvedValueOnce(false);
 
-    const res = await request(app).post('/auth/login').send({
+    const res = await request(app).post('/api/v1/auth/login').send({
       email: TEST_EMAIL,
       password: 'WrongPassword1',
     });
@@ -261,17 +261,17 @@ describe('POST /auth/login', () => {
   });
 
   it('400 — missing email', async () => {
-    const res = await request(app).post('/auth/login').send({ password: TEST_PASSWORD });
+    const res = await request(app).post('/api/v1/auth/login').send({ password: TEST_PASSWORD });
     expect(res.status).toBe(400);
   });
 
   it('400 — missing password', async () => {
-    const res = await request(app).post('/auth/login').send({ email: TEST_EMAIL });
+    const res = await request(app).post('/api/v1/auth/login').send({ email: TEST_EMAIL });
     expect(res.status).toBe(400);
   });
 
   it('400 — malformed email', async () => {
-    const res = await request(app).post('/auth/login').send({
+    const res = await request(app).post('/api/v1/auth/login').send({
       email: 'bad@@email',
       password: TEST_PASSWORD,
     });
@@ -288,7 +288,7 @@ describe('POST /auth/refresh', () => {
     mockRedisExists.mockResolvedValueOnce(1); // token is active
     mockFindUnique.mockResolvedValueOnce(mockDbUser);
 
-    const res = await request(app).post('/auth/refresh').send({ refreshToken: token });
+    const res = await request(app).post('/api/v1/auth/refresh').send({ refreshToken: token });
 
     expect(res.status).toBe(200);
     expect(res.body.data.accessToken).toBeTruthy();
@@ -299,13 +299,13 @@ describe('POST /auth/refresh', () => {
   });
 
   it('400 — missing refreshToken field', async () => {
-    const res = await request(app).post('/auth/refresh').send({});
+    const res = await request(app).post('/api/v1/auth/refresh').send({});
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
   });
 
   it('401 — tampered / invalid signature', async () => {
-    const res = await request(app).post('/auth/refresh').send({
+    const res = await request(app).post('/api/v1/auth/refresh').send({
       refreshToken: 'this.is.not.a.valid.jwt',
     });
     expect(res.status).toBe(401);
@@ -314,7 +314,7 @@ describe('POST /auth/refresh', () => {
 
   it('401 — expired refresh token', async () => {
     const expiredToken = makeExpiredRefreshToken(TEST_USER_ID);
-    const res = await request(app).post('/auth/refresh').send({ refreshToken: expiredToken });
+    const res = await request(app).post('/api/v1/auth/refresh').send({ refreshToken: expiredToken });
     expect(res.status).toBe(401);
     expect(res.body.error).toBe('UNAUTHORIZED');
   });
@@ -323,7 +323,7 @@ describe('POST /auth/refresh', () => {
     const token = makeRefreshToken(TEST_USER_ID);
     mockRedisExists.mockResolvedValueOnce(0); // not in Redis
 
-    const res = await request(app).post('/auth/refresh').send({ refreshToken: token });
+    const res = await request(app).post('/api/v1/auth/refresh').send({ refreshToken: token });
 
     expect(res.status).toBe(401);
     expect(res.body.message).toMatch(/revoked/i);
@@ -334,7 +334,7 @@ describe('POST /auth/refresh', () => {
     mockRedisExists.mockResolvedValueOnce(1);
     mockFindUnique.mockResolvedValueOnce(null); // user gone
 
-    const res = await request(app).post('/auth/refresh').send({ refreshToken: token });
+    const res = await request(app).post('/api/v1/auth/refresh').send({ refreshToken: token });
 
     expect(res.status).toBe(401);
   });
@@ -345,7 +345,7 @@ describe('POST /auth/refresh', () => {
       'completely_wrong_secret_value_here',
       { expiresIn: '30d' },
     );
-    const res = await request(app).post('/auth/refresh').send({ refreshToken: badToken });
+    const res = await request(app).post('/api/v1/auth/refresh').send({ refreshToken: badToken });
     expect(res.status).toBe(401);
   });
 });
@@ -356,7 +356,7 @@ describe('POST /auth/refresh', () => {
 describe('POST /auth/logout', () => {
   it('204 — valid token is revoked', async () => {
     const token = makeRefreshToken(TEST_USER_ID);
-    const res = await request(app).post('/auth/logout').send({ refreshToken: token });
+    const res = await request(app).post('/api/v1/auth/logout').send({ refreshToken: token });
 
     expect(res.status).toBe(204);
     expect(mockRedisDel).toHaveBeenCalledTimes(1);
@@ -365,7 +365,7 @@ describe('POST /auth/logout', () => {
   it('204 — already-revoked / invalid token still returns 204 (idempotent)', async () => {
     // An invalid JWT signature — authService.verifyRefreshToken returns null,
     // so we skip the Redis delete and still return 204
-    const res = await request(app).post('/auth/logout').send({
+    const res = await request(app).post('/api/v1/auth/logout').send({
       refreshToken: 'invalid.jwt.token',
     });
 
@@ -374,7 +374,7 @@ describe('POST /auth/logout', () => {
   });
 
   it('400 — missing refreshToken field', async () => {
-    const res = await request(app).post('/auth/logout').send({});
+    const res = await request(app).post('/api/v1/auth/logout').send({});
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
   });
@@ -387,7 +387,7 @@ describe('POST /auth/forgot-password', () => {
   it('200 — existing email sends reset email and stores token', async () => {
     mockFindUnique.mockResolvedValueOnce(mockDbUser);
 
-    const res = await request(app).post('/auth/forgot-password').send({ email: TEST_EMAIL });
+    const res = await request(app).post('/api/v1/auth/forgot-password').send({ email: TEST_EMAIL });
 
     expect(res.status).toBe(200);
     expect(mockRedisSet).toHaveBeenCalledTimes(1);
@@ -398,7 +398,7 @@ describe('POST /auth/forgot-password', () => {
   it('200 — non-existent email returns 200 without leaking user existence', async () => {
     mockFindUnique.mockResolvedValueOnce(null); // user not found
 
-    const res = await request(app).post('/auth/forgot-password').send({
+    const res = await request(app).post('/api/v1/auth/forgot-password').send({
       email: 'nobody@example.com',
     });
 
@@ -411,13 +411,13 @@ describe('POST /auth/forgot-password', () => {
   });
 
   it('400 — invalid email format', async () => {
-    const res = await request(app).post('/auth/forgot-password').send({ email: 'bad-email' });
+    const res = await request(app).post('/api/v1/auth/forgot-password').send({ email: 'bad-email' });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
   });
 
   it('400 — missing email', async () => {
-    const res = await request(app).post('/auth/forgot-password').send({});
+    const res = await request(app).post('/api/v1/auth/forgot-password').send({});
     expect(res.status).toBe(400);
   });
 });
@@ -433,7 +433,7 @@ describe('POST /auth/reset-password', () => {
     mockRedisKeys.mockResolvedValueOnce(existingRtKeys);
     mockUpdate.mockResolvedValueOnce(mockDbUser);
 
-    const res = await request(app).post('/auth/reset-password').send({
+    const res = await request(app).post('/api/v1/auth/reset-password').send({
       token: resetToken,
       password: 'NewPassword1',
     });
@@ -454,7 +454,7 @@ describe('POST /auth/reset-password', () => {
     mockRedisKeys.mockResolvedValueOnce([]); // no active refresh tokens
     mockUpdate.mockResolvedValueOnce(mockDbUser);
 
-    const res = await request(app).post('/auth/reset-password').send({
+    const res = await request(app).post('/api/v1/auth/reset-password').send({
       token: resetToken,
       password: 'NewPassword1',
     });
@@ -466,7 +466,7 @@ describe('POST /auth/reset-password', () => {
   it('400 — invalid or expired token (not in Redis)', async () => {
     mockRedisGetdel.mockResolvedValueOnce(null); // token not found / expired
 
-    const res = await request(app).post('/auth/reset-password').send({
+    const res = await request(app).post('/api/v1/auth/reset-password').send({
       token: 'expiredtoken',
       password: 'NewPassword1',
     });
@@ -481,14 +481,14 @@ describe('POST /auth/reset-password', () => {
     // First call: getdel atomically returns and removes the token
     mockRedisGetdel.mockResolvedValueOnce(TEST_USER_ID);
     mockUpdate.mockResolvedValueOnce(mockDbUser);
-    await request(app).post('/auth/reset-password').send({
+    await request(app).post('/api/v1/auth/reset-password').send({
       token: resetToken,
       password: 'NewPassword1',
     });
 
     // Second call: token already consumed (getdel returns null)
     mockRedisGetdel.mockResolvedValueOnce(null);
-    const res = await request(app).post('/auth/reset-password').send({
+    const res = await request(app).post('/api/v1/auth/reset-password').send({
       token: resetToken,
       password: 'AnotherPass1',
     });
@@ -498,19 +498,19 @@ describe('POST /auth/reset-password', () => {
   });
 
   it('400 — missing token', async () => {
-    const res = await request(app).post('/auth/reset-password').send({ password: 'NewPassword1' });
+    const res = await request(app).post('/api/v1/auth/reset-password').send({ password: 'NewPassword1' });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
   });
 
   it('400 — missing password', async () => {
-    const res = await request(app).post('/auth/reset-password').send({ token: 'sometoken' });
+    const res = await request(app).post('/api/v1/auth/reset-password').send({ token: 'sometoken' });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
   });
 
   it('400 — new password shorter than 8 characters', async () => {
-    const res = await request(app).post('/auth/reset-password').send({
+    const res = await request(app).post('/api/v1/auth/reset-password').send({
       token: 'sometoken',
       password: 'short',
     });
