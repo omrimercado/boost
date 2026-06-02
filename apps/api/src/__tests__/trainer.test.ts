@@ -94,6 +94,8 @@ const mockSessionRecord = {
   traineeId: TRAINEE_ID,
   startedAt: new Date('2024-06-01T10:00:00Z'),
   endedAt: null,
+  sets: [],
+  sessionReads: [],
 };
 
 const mockEndedSessionRecord = {
@@ -154,7 +156,7 @@ describe('GET /trainer/trainees', () => {
     ]);
 
     const res = await request(app)
-      .get('/trainer/trainees')
+      .get('/api/v1/trainer/trainees')
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -180,7 +182,7 @@ describe('GET /trainer/trainees', () => {
     // activeTraineeIds is empty so no batch queries fire; no findMany mocks needed
 
     const res = await request(app)
-      .get('/trainer/trainees')
+      .get('/api/v1/trainer/trainees')
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -194,7 +196,7 @@ describe('GET /trainer/trainees', () => {
     mockSessionFindMany.mockResolvedValueOnce([]); // no unread red
 
     const res = await request(app)
-      .get('/trainer/trainees')
+      .get('/api/v1/trainer/trainees')
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -212,7 +214,7 @@ describe('GET /trainer/trainees', () => {
     mockSessionFindMany.mockResolvedValueOnce([]);
 
     const res = await request(app)
-      .get('/trainer/trainees')
+      .get('/api/v1/trainer/trainees')
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -221,13 +223,13 @@ describe('GET /trainer/trainees', () => {
   });
 
   it('401 — unauthenticated', async () => {
-    const res = await request(app).get('/trainer/trainees');
+    const res = await request(app).get('/api/v1/trainer/trainees');
     expect(res.status).toBe(401);
   });
 
   it('403 — trainee cannot access trainer routes', async () => {
     const res = await request(app)
-      .get('/trainer/trainees')
+      .get('/api/v1/trainer/trainees')
       .set('Authorization', `Bearer ${traineeToken}`);
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('FORBIDDEN');
@@ -244,7 +246,7 @@ describe('GET /trainer/trainees/:traineeId/sessions', () => {
     mockSessionCount.mockResolvedValueOnce(2);
 
     const res = await request(app)
-      .get(`/trainer/trainees/${TRAINEE_ID}/sessions`)
+      .get(`/api/v1/trainer/trainees/${TRAINEE_ID}/sessions`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -265,7 +267,7 @@ describe('GET /trainer/trainees/:traineeId/sessions', () => {
     mockSessionCount.mockResolvedValueOnce(10);
 
     const res = await request(app)
-      .get(`/trainer/trainees/${TRAINEE_ID}/sessions?page=2&limit=5`)
+      .get(`/api/v1/trainer/trainees/${TRAINEE_ID}/sessions?page=2&limit=5`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -283,7 +285,7 @@ describe('GET /trainer/trainees/:traineeId/sessions', () => {
     mockSessionCount.mockResolvedValueOnce(0);
 
     const res = await request(app)
-      .get(`/trainer/trainees/${TRAINEE_ID}/sessions`)
+      .get(`/api/v1/trainer/trainees/${TRAINEE_ID}/sessions`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -295,7 +297,7 @@ describe('GET /trainer/trainees/:traineeId/sessions', () => {
     mockLinkFindFirst.mockResolvedValueOnce(null);
 
     const res = await request(app)
-      .get(`/trainer/trainees/${TRAINEE_ID}/sessions`)
+      .get(`/api/v1/trainer/trainees/${TRAINEE_ID}/sessions`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(403);
@@ -303,13 +305,13 @@ describe('GET /trainer/trainees/:traineeId/sessions', () => {
   });
 
   it('401 — unauthenticated', async () => {
-    const res = await request(app).get(`/trainer/trainees/${TRAINEE_ID}/sessions`);
+    const res = await request(app).get(`/api/v1/trainer/trainees/${TRAINEE_ID}/sessions`);
     expect(res.status).toBe(401);
   });
 
   it('403 — trainee cannot access trainer routes', async () => {
     const res = await request(app)
-      .get(`/trainer/trainees/${TRAINEE_ID}/sessions`)
+      .get(`/api/v1/trainer/trainees/${TRAINEE_ID}/sessions`)
       .set('Authorization', `Bearer ${traineeToken}`);
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('FORBIDDEN');
@@ -317,7 +319,7 @@ describe('GET /trainer/trainees/:traineeId/sessions', () => {
 
   it('400 — invalid traineeId UUID in path', async () => {
     const res = await request(app)
-      .get('/trainer/trainees/not-a-uuid/sessions')
+      .get('/api/v1/trainer/trainees/not-a-uuid/sessions')
       .set('Authorization', `Bearer ${trainerToken}`);
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
@@ -325,7 +327,7 @@ describe('GET /trainer/trainees/:traineeId/sessions', () => {
 
   it('400 — page must be a positive integer', async () => {
     const res = await request(app)
-      .get(`/trainer/trainees/${TRAINEE_ID}/sessions?page=0`)
+      .get(`/api/v1/trainer/trainees/${TRAINEE_ID}/sessions?page=0`)
       .set('Authorization', `Bearer ${trainerToken}`);
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
@@ -333,7 +335,7 @@ describe('GET /trainer/trainees/:traineeId/sessions', () => {
 
   it('400 — limit must not exceed 100', async () => {
     const res = await request(app)
-      .get(`/trainer/trainees/${TRAINEE_ID}/sessions?limit=200`)
+      .get(`/api/v1/trainer/trainees/${TRAINEE_ID}/sessions?limit=200`)
       .set('Authorization', `Bearer ${trainerToken}`);
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
@@ -359,7 +361,7 @@ describe('GET /trainer/sessions/:sessionId', () => {
     mockLinkFindFirst.mockResolvedValueOnce(mockActiveLinkRecord);
 
     const res = await request(app)
-      .get(`/trainer/sessions/${SESSION_ID}`)
+      .get(`/api/v1/trainer/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -385,7 +387,7 @@ describe('GET /trainer/sessions/:sessionId', () => {
     mockLinkFindFirst.mockResolvedValueOnce(mockActiveLinkRecord);
 
     const res = await request(app)
-      .get(`/trainer/sessions/${SESSION_ID}`)
+      .get(`/api/v1/trainer/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -400,7 +402,7 @@ describe('GET /trainer/sessions/:sessionId', () => {
     mockLinkFindFirst.mockResolvedValueOnce(mockActiveLinkRecord);
 
     const res = await request(app)
-      .get(`/trainer/sessions/${SESSION_ID}`)
+      .get(`/api/v1/trainer/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -411,7 +413,7 @@ describe('GET /trainer/sessions/:sessionId', () => {
     mockSessionFindUnique.mockResolvedValueOnce(null);
 
     const res = await request(app)
-      .get(`/trainer/sessions/${SESSION_ID}`)
+      .get(`/api/v1/trainer/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(404);
@@ -423,7 +425,7 @@ describe('GET /trainer/sessions/:sessionId', () => {
     mockLinkFindFirst.mockResolvedValueOnce(null);
 
     const res = await request(app)
-      .get(`/trainer/sessions/${SESSION_ID}`)
+      .get(`/api/v1/trainer/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(403);
@@ -431,13 +433,13 @@ describe('GET /trainer/sessions/:sessionId', () => {
   });
 
   it('401 — unauthenticated', async () => {
-    const res = await request(app).get(`/trainer/sessions/${SESSION_ID}`);
+    const res = await request(app).get(`/api/v1/trainer/sessions/${SESSION_ID}`);
     expect(res.status).toBe(401);
   });
 
   it('403 — trainee cannot access trainer routes', async () => {
     const res = await request(app)
-      .get(`/trainer/sessions/${SESSION_ID}`)
+      .get(`/api/v1/trainer/sessions/${SESSION_ID}`)
       .set('Authorization', `Bearer ${traineeToken}`);
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('FORBIDDEN');
@@ -445,7 +447,7 @@ describe('GET /trainer/sessions/:sessionId', () => {
 
   it('400 — invalid UUID in path', async () => {
     const res = await request(app)
-      .get('/trainer/sessions/not-a-uuid')
+      .get('/api/v1/trainer/sessions/not-a-uuid')
       .set('Authorization', `Bearer ${trainerToken}`);
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
@@ -462,7 +464,7 @@ describe('PATCH /trainer/sessions/:sessionId/read', () => {
     mockSessionReadUpsert.mockResolvedValueOnce(mockSessionReadRecord);
 
     const res = await request(app)
-      .patch(`/trainer/sessions/${SESSION_ID}/read`)
+      .patch(`/api/v1/trainer/sessions/${SESSION_ID}/read`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -484,7 +486,7 @@ describe('PATCH /trainer/sessions/:sessionId/read', () => {
     mockSessionReadUpsert.mockResolvedValueOnce(mockSessionReadRecord);
 
     const res = await request(app)
-      .patch(`/trainer/sessions/${SESSION_ID}/read`)
+      .patch(`/api/v1/trainer/sessions/${SESSION_ID}/read`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(200);
@@ -496,7 +498,7 @@ describe('PATCH /trainer/sessions/:sessionId/read', () => {
     mockSessionFindUnique.mockResolvedValueOnce(null);
 
     const res = await request(app)
-      .patch(`/trainer/sessions/${SESSION_ID}/read`)
+      .patch(`/api/v1/trainer/sessions/${SESSION_ID}/read`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(404);
@@ -508,7 +510,7 @@ describe('PATCH /trainer/sessions/:sessionId/read', () => {
     mockLinkFindFirst.mockResolvedValueOnce(null);
 
     const res = await request(app)
-      .patch(`/trainer/sessions/${SESSION_ID}/read`)
+      .patch(`/api/v1/trainer/sessions/${SESSION_ID}/read`)
       .set('Authorization', `Bearer ${trainerToken}`);
 
     expect(res.status).toBe(403);
@@ -516,13 +518,13 @@ describe('PATCH /trainer/sessions/:sessionId/read', () => {
   });
 
   it('401 — unauthenticated', async () => {
-    const res = await request(app).patch(`/trainer/sessions/${SESSION_ID}/read`);
+    const res = await request(app).patch(`/api/v1/trainer/sessions/${SESSION_ID}/read`);
     expect(res.status).toBe(401);
   });
 
   it('403 — trainee cannot mark sessions as read', async () => {
     const res = await request(app)
-      .patch(`/trainer/sessions/${SESSION_ID}/read`)
+      .patch(`/api/v1/trainer/sessions/${SESSION_ID}/read`)
       .set('Authorization', `Bearer ${traineeToken}`);
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('FORBIDDEN');
@@ -530,7 +532,7 @@ describe('PATCH /trainer/sessions/:sessionId/read', () => {
 
   it('400 — invalid UUID in path', async () => {
     const res = await request(app)
-      .patch('/trainer/sessions/not-a-uuid/read')
+      .patch('/api/v1/trainer/sessions/not-a-uuid/read')
       .set('Authorization', `Bearer ${trainerToken}`);
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
