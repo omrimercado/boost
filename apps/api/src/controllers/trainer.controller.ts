@@ -127,16 +127,16 @@ export const trainerController = {
       prisma.session.count({ where: { traineeId } }),
     ]);
 
-    const items = sessions.map((s) => ({
+    const items = sessions.map((s: (typeof sessions)[number]) => ({
       id: s.id,
       traineeId: s.traineeId,
       startedAt: s.startedAt.toISOString(),
       endedAt: s.endedAt ? s.endedAt.toISOString() : null,
       setCount: s.sets.length,
       scoreSummary: {
-        green: s.sets.filter((set) => set.formScore?.scoreTier === 'green').length,
-        yellow: s.sets.filter((set) => set.formScore?.scoreTier === 'yellow').length,
-        red: s.sets.filter((set) => set.formScore?.scoreTier === 'red').length,
+        green: s.sets.filter((set: (typeof s.sets)[number]) => set.formScore?.scoreTier === 'green').length,
+        yellow: s.sets.filter((set: (typeof s.sets)[number]) => set.formScore?.scoreTier === 'yellow').length,
+        red: s.sets.filter((set: (typeof s.sets)[number]) => set.formScore?.scoreTier === 'red').length,
       },
       isRead: s.sessionReads.length > 0,
     }));
