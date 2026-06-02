@@ -15,15 +15,15 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
-app.get('/health', (_req, res) => {
+app.get('/api/v1/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.use('/auth', authRouter);
-app.use('/invites', inviteRouter);
-app.use('/sessions', sessionRouter);
-app.use('/sets', setRouter);
-app.use('/trainer', trainerRouter);
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/invites', inviteRouter);
+app.use('/api/v1/sessions', sessionRouter);
+app.use('/api/v1/sets', setRouter);
+app.use('/api/v1/trainer', trainerRouter);
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error(err);
