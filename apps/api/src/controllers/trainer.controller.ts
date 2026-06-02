@@ -114,6 +114,12 @@ export const trainerController = {
     const [sessions, total] = await Promise.all([
       prisma.session.findMany({
         where: { traineeId },
+        include: {
+          sets: {
+            include: { formScore: { select: { scoreTier: true } } },
+          },
+          sessionReads: { where: { trainerId }, take: 1 },
+        },
         orderBy: { startedAt: 'desc' },
         skip: (pageNum - 1) * limitNum,
         take: limitNum,
@@ -121,9 +127,23 @@ export const trainerController = {
       prisma.session.count({ where: { traineeId } }),
     ]);
 
+    const items = sessions.map((s: (typeof sessions)[number]) => ({
+      id: s.id,
+      traineeId: s.traineeId,
+      startedAt: s.startedAt.toISOString(),
+      endedAt: s.endedAt ? s.endedAt.toISOString() : null,
+      setCount: s.sets.length,
+      scoreSummary: {
+        green: s.sets.filter((set: (typeof s.sets)[number]) => set.formScore?.scoreTier === 'green').length,
+        yellow: s.sets.filter((set: (typeof s.sets)[number]) => set.formScore?.scoreTier === 'yellow').length,
+        red: s.sets.filter((set: (typeof s.sets)[number]) => set.formScore?.scoreTier === 'red').length,
+      },
+      isRead: s.sessionReads.length > 0,
+    }));
+
     res.status(200).json({
       data: {
-        sessions: sessions.map(serializeSession),
+        sessions: items,
         pagination: { page: pageNum, limit: limitNum, total },
       },
     });
@@ -140,6 +160,7 @@ export const trainerController = {
           include: { formScore: true },
           orderBy: { setNumber: 'asc' },
         },
+        sessionReads: { where: { trainerId }, take: 1 },
       },
     });
 
@@ -158,6 +179,7 @@ export const trainerController = {
 
     const serialized = {
       ...serializeSession(session),
+      isRead: session.sessionReads.length > 0,
       sets: session.sets.map((s: SetWithFormScore) => ({
         ...serializeSet(s),
         formScore: s.formScore ? serializeFormScore(s.formScore) : null,

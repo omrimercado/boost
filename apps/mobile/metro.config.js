@@ -16,9 +16,17 @@ config.resolver.nodeModulesPaths = [
   path.resolve(workspaceRoot, 'node_modules'),
 ];
 
-// Resolve @shared/* to packages/shared/src
-config.resolver.extraNodeModules = {
-  '@shared': path.resolve(workspaceRoot, 'packages/shared/src'),
-};
+// Fall back to workspace root node_modules for any module not found locally.
+// Required for HMR entry-point registration in monorepos (Metro resolves the
+// entry as a relative ./node_modules/ path which bypasses nodeModulesPaths).
+config.resolver.extraNodeModules = new Proxy(
+  { '@shared': path.resolve(workspaceRoot, 'packages/shared/src') },
+  {
+    get: (target, name) => {
+      if (name in target) return target[name];
+      return path.join(workspaceRoot, `node_modules/${String(name)}`);
+    },
+  }
+);
 
 module.exports = withNativeWind(config, { input: './global.css' });
