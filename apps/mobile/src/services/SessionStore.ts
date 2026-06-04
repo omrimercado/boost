@@ -1,5 +1,8 @@
 import { MMKV } from 'react-native-mmkv';
 import type { ExerciseName } from '@boost/shared';
+import type { AngleSummaryEntry } from '../pose/angleCalculator';
+
+export type { AngleSummaryEntry };
 
 const storage = new MMKV();
 
@@ -13,6 +16,8 @@ export interface LocalSet {
   reps: number;
   setNumber: number;
   loggedAt: string;
+  angleData?: Record<string, AngleSummaryEntry>;
+  poseConfidence?: number;
 }
 
 export interface LocalSession {

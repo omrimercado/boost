@@ -4,6 +4,12 @@ import jwt from 'jsonwebtoken';
 
 jest.mock('dotenv/config', () => ({}));
 
+jest.mock('../services/formAnalysis.service', () => ({
+  formAnalysisService: {
+    analyzeForm: jest.fn(),
+  },
+}));
+
 jest.mock('../lib/prisma', () => ({
   prisma: {
     session: {
@@ -46,6 +52,7 @@ jest.mock('../services/email.service', () => ({
 import app from '../app';
 import { prisma } from '../lib/prisma';
 import { redisService } from '../services/redis.service';
+import { formAnalysisService } from '../services/formAnalysis.service';
 
 const mockSessionFindUnique = prisma.session.findUnique as jest.Mock;
 const mockSessionFindMany = prisma.session.findMany as jest.Mock;
@@ -56,6 +63,7 @@ const mockSetCreate = prisma.set.create as jest.Mock;
 const mockFormScoreCreate = prisma.formScore.create as jest.Mock;
 const mockLinkFindFirst = prisma.trainerTrainee.findFirst as jest.Mock;
 const mockRedisExists = redisService.exists as jest.Mock;
+const mockAnalyzeForm = formAnalysisService.analyzeForm as jest.Mock;
 
 const ACCESS_SECRET = 'test_access_secret_long_enough_32chars';
 const REFRESH_SECRET = 'test_refresh_secret_long_enough_32ch';
@@ -473,12 +481,9 @@ describe('POST /sessions/:id/sets', () => {
 // POST /sets/:id/form-score
 // ---------------------------------------------------------------------------
 describe('POST /sets/:id/form-score', () => {
-  const validFormScoreBody = {
-    scoreTier: 'green',
-    coachingText: 'Great form!',
-    angleData: { knee: { min: 90, max: 120, avg: 105, deviationCount: 2 } },
-    confidenceLevel: 0.95,
-  };
+  const ANGLE_DATA = { knee: { min: 90, max: 120, avg: 105, deviationCount: 2 } };
+
+  const validBody = { angleData: ANGLE_DATA, confidenceLevel: 0.95 };
 
   const mockSetWithSession = {
     ...mockSetRecord,
@@ -486,34 +491,37 @@ describe('POST /sets/:id/form-score', () => {
     formScore: null,
   };
 
-  it('201 — attaches form score to owned set', async () => {
+  it('201 — calls AI service and stores form score', async () => {
     mockSetFindUnique.mockResolvedValueOnce(mockSetWithSession);
+    mockAnalyzeForm.mockResolvedValueOnce({ scoreTier: 'green', coachingText: 'Great form!' });
     mockFormScoreCreate.mockResolvedValueOnce(mockFormScoreRecord);
 
     const res = await request(app)
       .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
-      .send(validFormScoreBody);
+      .send(validBody);
 
     expect(res.status).toBe(201);
     expect(res.body.data.formScore.scoreTier).toBe('green');
     expect(res.body.data.formScore.coachingText).toBe('Great form!');
     expect(res.body.data.formScore.confidenceLevel).toBe(0.95);
+    expect(mockAnalyzeForm).toHaveBeenCalledWith('squat', 5, ANGLE_DATA, 0.95);
     expect(mockFormScoreCreate).toHaveBeenCalledTimes(1);
   });
 
-  it('201 — attaches form score without optional confidenceLevel', async () => {
+  it('201 — works without optional confidenceLevel', async () => {
     const formScoreWithoutConfidence = { ...mockFormScoreRecord, confidenceLevel: null };
     mockSetFindUnique.mockResolvedValueOnce(mockSetWithSession);
+    mockAnalyzeForm.mockResolvedValueOnce({ scoreTier: 'yellow', coachingText: 'Minor issues.' });
     mockFormScoreCreate.mockResolvedValueOnce(formScoreWithoutConfidence);
 
     const res = await request(app)
       .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
-      .send({ scoreTier: 'red', coachingText: 'Needs improvement', angleData: {} });
+      .send({ angleData: ANGLE_DATA });
 
     expect(res.status).toBe(201);
-    expect(res.body.data.formScore.confidenceLevel).toBeNull();
+    expect(mockAnalyzeForm).toHaveBeenCalledWith('squat', 5, ANGLE_DATA, null);
   });
 
   it('404 — set not found', async () => {
@@ -522,7 +530,7 @@ describe('POST /sets/:id/form-score', () => {
     const res = await request(app)
       .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
-      .send(validFormScoreBody);
+      .send(validBody);
 
     expect(res.status).toBe(404);
     expect(res.body.error).toBe('NOT_FOUND');
@@ -537,7 +545,7 @@ describe('POST /sets/:id/form-score', () => {
     const res = await request(app)
       .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
-      .send(validFormScoreBody);
+      .send(validBody);
 
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('FORBIDDEN');
@@ -552,16 +560,28 @@ describe('POST /sets/:id/form-score', () => {
     const res = await request(app)
       .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
-      .send(validFormScoreBody);
+      .send(validBody);
 
     expect(res.status).toBe(409);
     expect(res.body.error).toBe('FORM_SCORE_EXISTS');
   });
 
+  it('500 — AI service failure propagates as 500', async () => {
+    mockSetFindUnique.mockResolvedValueOnce(mockSetWithSession);
+    mockAnalyzeForm.mockRejectedValueOnce(new Error('Claude API unavailable'));
+
+    const res = await request(app)
+      .post(`/api/v1/sets/${SET_ID}/form-score`)
+      .set('Authorization', `Bearer ${traineeToken}`)
+      .send(validBody);
+
+    expect(res.status).toBe(500);
+  });
+
   it('401 — unauthenticated', async () => {
     const res = await request(app)
       .post(`/api/v1/sets/${SET_ID}/form-score`)
-      .send(validFormScoreBody);
+      .send(validBody);
     expect(res.status).toBe(401);
   });
 
@@ -569,34 +589,16 @@ describe('POST /sets/:id/form-score', () => {
     const res = await request(app)
       .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${trainerToken}`)
-      .send(validFormScoreBody);
+      .send(validBody);
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('FORBIDDEN');
-  });
-
-  it('400 — invalid scoreTier', async () => {
-    const res = await request(app)
-      .post(`/api/v1/sets/${SET_ID}/form-score`)
-      .set('Authorization', `Bearer ${traineeToken}`)
-      .send({ ...validFormScoreBody, scoreTier: 'blue' });
-    expect(res.status).toBe(400);
-    expect(res.body.error).toBe('VALIDATION_ERROR');
-  });
-
-  it('400 — missing coachingText', async () => {
-    const res = await request(app)
-      .post(`/api/v1/sets/${SET_ID}/form-score`)
-      .set('Authorization', `Bearer ${traineeToken}`)
-      .send({ scoreTier: 'green', angleData: {} });
-    expect(res.status).toBe(400);
-    expect(res.body.error).toBe('VALIDATION_ERROR');
   });
 
   it('400 — missing angleData', async () => {
     const res = await request(app)
       .post(`/api/v1/sets/${SET_ID}/form-score`)
       .set('Authorization', `Bearer ${traineeToken}`)
-      .send({ scoreTier: 'green', coachingText: 'ok' });
+      .send({ confidenceLevel: 0.9 });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
   });
@@ -605,7 +607,16 @@ describe('POST /sets/:id/form-score', () => {
     const res = await request(app)
       .post('/api/v1/sets/not-a-uuid/form-score')
       .set('Authorization', `Bearer ${traineeToken}`)
-      .send(validFormScoreBody);
+      .send(validBody);
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('VALIDATION_ERROR');
+  });
+
+  it('400 — invalid confidenceLevel (> 1)', async () => {
+    const res = await request(app)
+      .post(`/api/v1/sets/${SET_ID}/form-score`)
+      .set('Authorization', `Bearer ${traineeToken}`)
+      .send({ angleData: ANGLE_DATA, confidenceLevel: 1.5 });
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('VALIDATION_ERROR');
   });

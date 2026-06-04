@@ -119,24 +119,24 @@
 
 ## 10. Mobile: Camera & Pose Estimation
 
-- [ ] 10.1 Build camera recording screen: camera preview full-screen, "Start Recording" / "Stop" button overlay, exercise name displayed
-- [ ] 10.2 Integrate MediaPipe frame processor (from spike result in Task 2): run pose detection on each frame during recording
-- [ ] 10.3 Implement per-frame angle calculation for each supported exercise using detected landmarks
-- [ ] 10.4 Implement confidence scoring: track average landmark visibility across frames
-- [ ] 10.5 On "Stop": compile angle summary (min/max/avg/deviation_count per joint) into JSON; pass to AI analysis flow
-- [ ] 10.6 Implement 5-second no-pose-detected prompt: "Adjust camera angle or lighting" overlay; "Skip Recording" option falls back to manual logging
-- [ ] 10.7 Handle camera permission denied gracefully: show inline message, proceed to manual logging
+- [x] 10.1 Build camera recording screen: camera preview full-screen, "Start Recording" / "Stop" button overlay, exercise name displayed
+- [x] 10.2 Integrate MediaPipe frame processor (from spike result in Task 2): run pose detection on each frame during recording
+- [x] 10.3 Implement per-frame angle calculation for each supported exercise using detected landmarks
+- [x] 10.4 Implement confidence scoring: track average landmark visibility across frames
+- [x] 10.5 On "Stop": compile angle summary (min/max/avg/deviation_count per joint) into JSON; pass to AI analysis flow
+- [x] 10.6 Implement 5-second no-pose-detected prompt: "Adjust camera angle or lighting" overlay; "Skip Recording" option falls back to manual logging
+- [x] 10.7 Handle camera permission denied gracefully: show inline message, proceed to manual logging
 
 ---
 
 ## 11. Mobile: AI Form Analysis Integration
 
-- [ ] 11.1 Implement `FormAnalysisService` on the API: build exercise-specific system prompts with angle thresholds; call Claude API with structured output (tool use); parse and return `{ score_tier, coaching_text }`
-- [ ] 11.2 Implement `POST /api/v1/sets/:id/form-score` to receive the analysis result and store it (already built in 5.4 — wire up the service call here)
-- [ ] 11.3 On mobile: after angle summary is compiled, call API's form score endpoint; show "Analyzing your form..." spinner
-- [ ] 11.4 Implement 5-second client-side timeout: on timeout, show "Analysis unavailable" and proceed to set logging
-- [ ] 11.5 Build form score result card: Green/Yellow/Red badge (color-coded), coaching text, "Log This Set" button below
-- [ ] 11.6 Handle all AI failure states on mobile: API error → "Couldn't analyze this set"; offline → "No connection — form analysis skipped"; always present set logging form regardless
+- [x] 11.1 Implement `FormAnalysisService` on the API: build exercise-specific system prompts with angle thresholds; call Claude API with structured output (tool use); parse and return `{ score_tier, coaching_text }`
+- [x] 11.2 Implement `POST /api/v1/sets/:id/form-score` to receive the analysis result and store it (already built in 5.4 — wire up the service call here)
+- [x] 11.3 On mobile: after angle summary is compiled, call API's form score endpoint; show "Analyzing your form..." spinner
+- [x] 11.4 Implement 5-second client-side timeout: on timeout, show "Analysis unavailable" and proceed to set logging
+- [x] 11.5 Build form score result card: Green/Yellow/Red badge (color-coded), coaching text, "Log This Set" button below
+- [x] 11.6 Handle all AI failure states on mobile: API error → "Couldn't analyze this set"; offline → "No connection — form analysis skipped"; always present set logging form regardless
 
 ---
 

@@ -2,6 +2,8 @@ import type { Response } from 'express';
 import { prisma } from '../lib/prisma';
 import type { AuthRequest } from '../middleware/auth.middleware';
 import { serializeSession, serializeSet, serializeFormScore } from '../lib/serializers';
+import { formAnalysisService } from '../services/formAnalysis.service';
+import type { AngleData, ExerciseName } from '@boost/shared';
 
 type SetWithFormScore = {
   id: string;
@@ -117,13 +119,11 @@ export const sessionController = {
     res.status(201).json({ data: { set: serializeSet(set) } });
   },
 
-  async createFormScore(req: AuthRequest, res: Response): Promise<void> {
+  async analyzeFormScore(req: AuthRequest, res: Response): Promise<void> {
     const traineeId = req.user!.id;
     const { id: setId } = req.params as { id: string };
-    const { scoreTier, coachingText, angleData, confidenceLevel } = req.body as {
-      scoreTier: string;
-      coachingText: string;
-      angleData: object;
+    const { angleData, confidenceLevel } = req.body as {
+      angleData: AngleData;
       confidenceLevel?: number;
     };
 
@@ -144,12 +144,28 @@ export const sessionController = {
       return;
     }
 
+    let scoreTier: 'green' | 'yellow' | 'red';
+    let coachingText: string;
+    try {
+      const result = await formAnalysisService.analyzeForm(
+        set.exerciseName as ExerciseName,
+        set.reps,
+        angleData,
+        confidenceLevel ?? null,
+      );
+      scoreTier = result.scoreTier;
+      coachingText = result.coachingText;
+    } catch {
+      res.status(500).json({ error: 'AI_ANALYSIS_FAILED', message: 'Form analysis failed' });
+      return;
+    }
+
     const formScore = await prisma.formScore.create({
       data: {
         setId,
-        scoreTier: scoreTier as 'green' | 'yellow' | 'red',
+        scoreTier,
         coachingText,
-        angleData,
+        angleData: angleData as object,
         confidenceLevel: confidenceLevel !== undefined ? confidenceLevel : null,
       },
     });

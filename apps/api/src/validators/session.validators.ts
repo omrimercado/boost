@@ -21,10 +21,8 @@ export const createSetValidators = [
   body('loggedAt').optional().isISO8601().withMessage('loggedAt must be a valid ISO 8601 date'),
 ];
 
-export const createFormScoreValidators = [
+export const analyzeFormScoreValidators = [
   param('id').isUUID().withMessage('Set id must be a valid UUID'),
-  body('scoreTier').isIn(['green', 'yellow', 'red']).withMessage('scoreTier must be green, yellow, or red'),
-  body('coachingText').notEmpty().withMessage('coachingText is required'),
   body('angleData').isObject().withMessage('angleData must be an object'),
   body('confidenceLevel').optional().isFloat({ min: 0, max: 1 }).withMessage('confidenceLevel must be between 0 and 1'),
 ];
