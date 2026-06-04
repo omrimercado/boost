@@ -40,9 +40,9 @@
 - [x] 3.3 Implement `POST /api/v1/auth/refresh` — look up hashed token in Redis, validate, issue new access token; rotate refresh token (delete old key, store new one)
 - [x] 3.4 Implement `POST /api/v1/auth/logout` — delete refresh token key from Redis
 - [x] 3.5 Implement JWT middleware: verify access token on protected routes, attach `req.user` with id and role
-- [ ] 3.6 Implement role-check middleware: `requireRole('trainer')` and `requireRole('trainee')` guards
+- [x] 3.6 Implement role-check middleware: `requireRole('trainer')` and `requireRole('trainee')` guards
 - [x] 3.7 Implement `POST /api/v1/auth/forgot-password` — generate 1-hour reset token, store in Redis, send email via Resend
-- [ ] 3.8 Implement `POST /api/v1/auth/reset-password` — validate reset token in Redis, update password hash via Prisma, delete all `refresh:<userId>:*` keys from Redis
+- [x] 3.8 Implement `POST /api/v1/auth/reset-password` — validate reset token in Redis, update password hash via Prisma, delete all `refresh:<userId>:*` keys from Redis
 
 ---
 
@@ -70,11 +70,11 @@
 
 ## 6. Backend: Trainer Dashboard API
 
-- [ ] 6.1 Implement `GET /api/v1/trainer/trainees` — list all trainer's trainees with last session date, pending status, and unread Red alert count; optimize with a single JOIN query
-- [ ] 6.2 Implement `GET /api/v1/trainer/trainees/:traineeId/sessions` — paginated session history for one trainee; trainer must be linked to that trainee
-- [ ] 6.3 Implement `GET /api/v1/trainer/sessions/:sessionId` — session detail with all sets + form scores; trainer must be linked to trainee who owns session
-- [ ] 6.4 Implement `PATCH /api/v1/trainer/sessions/:sessionId/read` — mark session as read; clear Red alert for that session for this trainer
-- [ ] 6.5 Add a `session_reads` join table (trainer_id, session_id, read_at) to track read state per trainer per session; run migration
+- [x] 6.1 Implement `GET /api/v1/trainer/trainees` — list all trainer's trainees with last session date, pending status, and unread Red alert count; optimize with a single JOIN query
+- [x] 6.2 Implement `GET /api/v1/trainer/trainees/:traineeId/sessions` — paginated session history for one trainee; trainer must be linked to that trainee
+- [x] 6.3 Implement `GET /api/v1/trainer/sessions/:sessionId` — session detail with all sets + form scores; trainer must be linked to trainee who owns session
+- [x] 6.4 Implement `PATCH /api/v1/trainer/sessions/:sessionId/read` — mark session as read; clear Red alert for that session for this trainer
+- [x] 6.5 Add a `session_reads` join table (trainer_id, session_id, read_at) to track read state per trainer per session; run migration
 
 ---
 
@@ -94,26 +94,26 @@
 
 ## 8. Mobile: Trainer Dashboard UI
 
-- [ ] 8.1 Build Trainer home screen: trainee list with skeleton loading; pull-to-refresh
-- [ ] 8.2 Implement Red badge indicator on trainee row; tapping badge navigates directly to most recent unread Red session
-- [ ] 8.3 Build "Add Trainee" bottom sheet: email input, submit button, call invite API, handle all edge cases (inline error messages)
-- [ ] 8.4 Build Trainee session history screen: session list with date, exercise count, score distribution (Green/Yellow/Red counts)
-- [ ] 8.5 Build session detail screen: per-set rows with exercise, weight, reps, form score badge + coaching text (expandable); unscored sets show "No form data"
-- [ ] 8.6 Implement read-on-view: call PATCH /read when session detail screen mounts; optimistically clear Red badge in Zustand state
+- [x] 8.1 Build Trainer home screen: trainee list with skeleton loading; pull-to-refresh
+- [x] 8.2 Implement Red badge indicator on trainee row; tapping badge navigates directly to most recent unread Red session
+- [x] 8.3 Build "Add Trainee" bottom sheet: email input, submit button, call invite API, handle all edge cases (inline error messages)
+- [x] 8.4 Build Trainee session history screen: session list with date, exercise count, score distribution (Green/Yellow/Red counts)
+- [x] 8.5 Build session detail screen: per-set rows with exercise, weight, reps, form score badge + coaching text (expandable); unscored sets show "No form data"
+- [x] 8.6 Implement read-on-view: call PATCH /read when session detail screen mounts; optimistically clear Red badge in Zustand state
 
 ---
 
 ## 9. Mobile: Trainee Session Logging UI
 
-- [ ] 9.1 Install MMKV (`react-native-mmkv`) for local-first storage; implement `SessionStore` service with MMKV persistence
-- [ ] 9.2 Build "Start Session" flow: generate client UUID, write to MMKV, queue backend sync
-- [ ] 9.3 Build exercise selection screen: show all 7 supported exercises
-- [ ] 9.4 Build set logging form: weight input (optional), reps input, set number (auto-incremented), "Save Set" button
-- [ ] 9.5 Implement sync queue in Zustand + MMKV: on network available, flush pending sessions/sets to backend using idempotency UUIDs
-- [ ] 9.6 Implement crash recovery: on app start, check MMKV for unfinished sessions; prompt Resume or Discard
-- [ ] 9.7 Build "End Session" button: set ended_at, flush sync queue, navigate to session summary screen
-- [ ] 9.8 Build session summary screen: show completed session with all logged sets and any form scores received
-- [ ] 9.9 Build Trainee History tab: list own completed sessions with date and score summary
+- [x] 9.1 Install MMKV (`react-native-mmkv`) for local-first storage; implement `SessionStore` service with MMKV persistence
+- [x] 9.2 Build "Start Session" flow: generate client UUID, write to MMKV, queue backend sync
+- [x] 9.3 Build exercise selection screen: show all 7 supported exercises
+- [x] 9.4 Build set logging form: weight input (optional), reps input, set number (auto-incremented), "Save Set" button
+- [x] 9.5 Implement sync queue in Zustand + MMKV: on network available, flush pending sessions/sets to backend using idempotency UUIDs
+- [x] 9.6 Implement crash recovery: on app start, check MMKV for unfinished sessions; prompt Resume or Discard
+- [x] 9.7 Build "End Session" button: set ended_at, flush sync queue, navigate to session summary screen
+- [x] 9.8 Build session summary screen: show completed session with all logged sets and any form scores received
+- [x] 9.9 Build Trainee History tab: list own completed sessions with date and score summary
 
 ---
 
