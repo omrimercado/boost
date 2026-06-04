@@ -32,6 +32,7 @@ interface SessionState {
   ) => void;
   clearPendingAngleData: () => void;
   addSet: (data: {
+    id?: string;
     exerciseName: ExerciseName;
     weightKg: number | null;
     reps: number;
@@ -89,11 +90,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({ activeSession: updated });
   },
 
-  addSet: ({ exerciseName, weightKg, reps, setNumber }) => {
+  addSet: ({ id, exerciseName, weightKg, reps, setNumber }) => {
     const { activeSession, pendingAngleData, pendingPoseConfidence } = get();
     if (!activeSession) return;
     const newSet: LocalSet = {
-      id: generateId(),
+      id: id ?? generateId(),
       exerciseName,
       weightKg,
       reps,
