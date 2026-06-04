@@ -119,13 +119,13 @@
 
 ## 10. Mobile: Camera & Pose Estimation
 
-- [ ] 10.1 Build camera recording screen: camera preview full-screen, "Start Recording" / "Stop" button overlay, exercise name displayed
-- [ ] 10.2 Integrate MediaPipe frame processor (from spike result in Task 2): run pose detection on each frame during recording
-- [ ] 10.3 Implement per-frame angle calculation for each supported exercise using detected landmarks
-- [ ] 10.4 Implement confidence scoring: track average landmark visibility across frames
-- [ ] 10.5 On "Stop": compile angle summary (min/max/avg/deviation_count per joint) into JSON; pass to AI analysis flow
-- [ ] 10.6 Implement 5-second no-pose-detected prompt: "Adjust camera angle or lighting" overlay; "Skip Recording" option falls back to manual logging
-- [ ] 10.7 Handle camera permission denied gracefully: show inline message, proceed to manual logging
+- [x] 10.1 Build camera recording screen: camera preview full-screen, "Start Recording" / "Stop" button overlay, exercise name displayed
+- [x] 10.2 Integrate MediaPipe frame processor (from spike result in Task 2): run pose detection on each frame during recording
+- [x] 10.3 Implement per-frame angle calculation for each supported exercise using detected landmarks
+- [x] 10.4 Implement confidence scoring: track average landmark visibility across frames
+- [x] 10.5 On "Stop": compile angle summary (min/max/avg/deviation_count per joint) into JSON; pass to AI analysis flow
+- [x] 10.6 Implement 5-second no-pose-detected prompt: "Adjust camera angle or lighting" overlay; "Skip Recording" option falls back to manual logging
+- [x] 10.7 Handle camera permission denied gracefully: show inline message, proceed to manual logging
 
 ---
 
