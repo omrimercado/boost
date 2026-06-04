@@ -7,5 +7,8 @@ module.exports = {
   moduleNameMapper: {
     '^@shared/(.*)$': '<rootDir>/../../packages/shared/src/$1',
     '^@/(.*)$': '<rootDir>/$1',
+    '^react-native-vision-camera$': '<rootDir>/__mocks__/react-native-vision-camera.ts',
+    '^react-native-fast-tflite$': '<rootDir>/__mocks__/react-native-fast-tflite.ts',
+    '^react-native-mmkv$': '<rootDir>/__mocks__/react-native-mmkv.ts',
   },
 };

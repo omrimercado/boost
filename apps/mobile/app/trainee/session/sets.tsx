@@ -14,6 +14,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSessionStore } from '@/src/stores/useSessionStore';
 
+const ANGLE_JOINT_LABELS: Record<string, string> = {
+  knee_left: 'Knee L',
+  knee_right: 'Knee R',
+  hip_left: 'Hip L',
+  hip_right: 'Hip R',
+  elbow_left: 'Elbow L',
+  elbow_right: 'Elbow R',
+  shoulder_left: 'Shoulder L',
+  shoulder_right: 'Shoulder R',
+  back_lean: 'Back Lean',
+  torso_upright: 'Torso',
+  knee_front: 'Front Knee',
+  knee_back: 'Back Knee',
+};
+
 function formatExercise(name: string): string {
   return name
     .split('_')
@@ -22,7 +37,7 @@ function formatExercise(name: string): string {
 }
 
 export default function SetLoggingScreen() {
-  const { activeSession, addSet, endSession, isSyncing } = useSessionStore();
+  const { activeSession, addSet, endSession, isSyncing, pendingAngleData, clearPendingAngleData } = useSessionStore();
   const [weight, setWeight] = useState('');
   const [reps, setReps] = useState('');
   const [error, setError] = useState('');
@@ -54,6 +69,7 @@ export default function SetLoggingScreen() {
     setLastSavedSet(setNumber);
     setWeight('');
     setReps('');
+    // angleData is consumed by addSet — no explicit clear needed here
   };
 
   const handleEndSession = async () => {
@@ -123,6 +139,48 @@ export default function SetLoggingScreen() {
       >
         <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
           <View className="px-5 pt-6">
+            {/* Record form button / angle data preview */}
+            {pendingAngleData ? (
+              <View className="bg-orange-950 border border-orange-800 rounded-2xl p-4 mb-5">
+                <View className="flex-row items-center justify-between mb-2">
+                  <View className="flex-row items-center">
+                    <Ionicons name="checkmark-circle" size={16} color="#4ade80" style={{ marginRight: 6 }} />
+                    <Text className="text-green-400 text-xs font-semibold uppercase tracking-wider">
+                      Form data recorded
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={clearPendingAngleData} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                    <Ionicons name="close" size={16} color="#64748b" />
+                  </TouchableOpacity>
+                </View>
+                <View className="flex-row flex-wrap" style={{ gap: 6 }}>
+                  {Object.entries(pendingAngleData)
+                    .slice(0, 4)
+                    .map(([joint, data]) => (
+                      <View key={joint} className="bg-slate-800 rounded-lg px-3 py-1.5">
+                        <Text className="text-slate-400 text-xs">{ANGLE_JOINT_LABELS[joint] ?? joint}</Text>
+                        <Text className="text-white text-xs font-semibold">{Math.round(data.avg)}°</Text>
+                      </View>
+                    ))}
+                </View>
+              </View>
+            ) : (
+              <TouchableOpacity
+                onPress={() => router.push('/trainee/session/camera' as never)}
+                activeOpacity={0.85}
+                className="bg-slate-900 border border-slate-700 rounded-2xl p-4 mb-5 flex-row items-center"
+              >
+                <View className="w-10 h-10 bg-orange-500/10 border border-orange-500/30 rounded-xl items-center justify-center mr-3">
+                  <Ionicons name="videocam-outline" size={20} color="#f97316" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-white font-semibold text-sm">Record Your Form</Text>
+                  <Text className="text-slate-500 text-xs mt-0.5">AI pose analysis via camera</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#475569" />
+              </TouchableOpacity>
+            )}
+
             {/* Set counter card */}
             <View className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex-row items-center mb-6">
               <View className="w-12 h-12 bg-orange-500/10 rounded-xl items-center justify-center mr-4">

@@ -10,6 +10,7 @@ import {
   clearSyncQueue,
   type LocalSession,
   type LocalSet,
+  type AngleSummaryEntry,
 } from '../services/SessionStore';
 
 function generateId(): string {
@@ -20,9 +21,16 @@ interface SessionState {
   activeSession: LocalSession | null;
   completedSession: LocalSession | null;
   isSyncing: boolean;
+  pendingAngleData: Record<string, AngleSummaryEntry> | null;
+  pendingPoseConfidence: number | null;
   initFromStorage: () => void;
   startSession: (id: string) => void;
   setExercise: (name: ExerciseName) => void;
+  setPendingAngleData: (
+    angleData: Record<string, AngleSummaryEntry>,
+    confidence: number
+  ) => void;
+  clearPendingAngleData: () => void;
   addSet: (data: {
     exerciseName: ExerciseName;
     weightKg: number | null;
@@ -39,6 +47,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   activeSession: null,
   completedSession: null,
   isSyncing: false,
+  pendingAngleData: null,
+  pendingPoseConfidence: null,
 
   initFromStorage: () => {
     const session = loadActiveSession();
@@ -63,6 +73,14 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({ activeSession: session });
   },
 
+  setPendingAngleData: (angleData, confidence) => {
+    set({ pendingAngleData: angleData, pendingPoseConfidence: confidence });
+  },
+
+  clearPendingAngleData: () => {
+    set({ pendingAngleData: null, pendingPoseConfidence: null });
+  },
+
   setExercise: (name: ExerciseName) => {
     const { activeSession } = get();
     if (!activeSession) return;
@@ -72,7 +90,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   addSet: ({ exerciseName, weightKg, reps, setNumber }) => {
-    const { activeSession } = get();
+    const { activeSession, pendingAngleData, pendingPoseConfidence } = get();
     if (!activeSession) return;
     const newSet: LocalSet = {
       id: generateId(),
@@ -81,6 +99,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       reps,
       setNumber,
       loggedAt: new Date().toISOString(),
+      angleData: pendingAngleData ?? undefined,
+      poseConfidence: pendingPoseConfidence ?? undefined,
     };
     const updated = { ...activeSession, sets: [...activeSession.sets, newSet] };
     saveActiveSession(updated);
@@ -95,9 +115,11 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         reps: newSet.reps,
         setNumber: newSet.setNumber,
         loggedAt: newSet.loggedAt,
+        angleData: newSet.angleData,
+        poseConfidence: newSet.poseConfidence,
       },
     });
-    set({ activeSession: updated });
+    set({ activeSession: updated, pendingAngleData: null, pendingPoseConfidence: null });
   },
 
   endSession: async () => {

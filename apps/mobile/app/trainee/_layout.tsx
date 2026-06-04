@@ -42,6 +42,7 @@ export default function TraineeLayout() {
       />
       <Tabs.Screen name="session/log" options={HIDDEN_SCREEN_OPTIONS} />
       <Tabs.Screen name="session/sets" options={HIDDEN_SCREEN_OPTIONS} />
+      <Tabs.Screen name="session/camera" options={HIDDEN_SCREEN_OPTIONS} />
       <Tabs.Screen name="session/summary" options={HIDDEN_SCREEN_OPTIONS} />
     </Tabs>
   );
