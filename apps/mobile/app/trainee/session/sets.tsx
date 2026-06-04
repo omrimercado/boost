@@ -114,7 +114,7 @@ export default function SetLoggingScreen() {
         setFormScoreResult(outcome.result);
         setAnalysisState('success');
       } else {
-        setAnalysisState(outcome.reason === 'timeout' ? 'timeout' : outcome.reason === 'offline' ? 'offline' : 'error');
+        setAnalysisState(outcome.reason === 'api_error' ? 'error' : outcome.reason);
       }
     } else {
       addSet({ exerciseName: exercise, weightKg: weightNum, reps: repsNum, setNumber });

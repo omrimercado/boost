@@ -100,7 +100,7 @@ describe('syncSetAndAnalyzeForm', () => {
     if (!result.ok) expect(result.reason).toBe('timeout');
   });
 
-  it('returns offline failure for network errors', async () => {
+  it('returns offline failure for ERR_NETWORK errors', async () => {
     const networkErr = Object.assign(new Error('Network Error'), { code: 'ERR_NETWORK' });
     mockPost.mockRejectedValueOnce(networkErr);
 

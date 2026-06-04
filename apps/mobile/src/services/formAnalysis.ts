@@ -66,9 +66,7 @@ export async function syncSetAndAnalyzeForm(
     const axiosErr = err as AxiosError;
     if (
       !axiosErr.response &&
-      (axiosErr.code === 'ECONNABORTED' ||
-        axiosErr.code === 'ERR_NETWORK' ||
-        axiosErr.message === 'Network Error')
+      (axiosErr.code === 'ECONNABORTED' || axiosErr.code === 'ERR_NETWORK')
     ) {
       return { ok: false, reason: 'offline' };
     }

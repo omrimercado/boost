@@ -1,8 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { ExerciseName, AngleData } from '@boost/shared';
+import type { ExerciseName, AngleData, ScoreTier } from '@boost/shared';
 
 export interface FormAnalysisResult {
-  scoreTier: 'green' | 'yellow' | 'red';
+  scoreTier: ScoreTier;
   coachingText: string;
 }
 
@@ -105,7 +105,7 @@ ${thresholdLines}
 Guidelines:
 - A low confidence level (<0.5) means landmarks were frequently occluded — be lenient and note uncertainty.
 - High deviationCount (>30% of reps) for a joint means inconsistent form on that joint.
-- Focus coaching text on the most critical single issue. Keep it under 80 characters.
+- Focus coaching text on the most critical single issue. Keep it under 120 characters.
 - Always call the report_form_score tool with your analysis.`;
 }
 
@@ -186,13 +186,13 @@ class FormAnalysisService {
     }
 
     const input = toolUse.input as { score_tier: string; coaching_text: string };
-    const validTiers = ['green', 'yellow', 'red'] as const;
-    if (!validTiers.includes(input.score_tier as (typeof validTiers)[number])) {
+    const validTiers: ScoreTier[] = ['green', 'yellow', 'red'];
+    if (!validTiers.includes(input.score_tier as ScoreTier)) {
       throw new Error(`FormAnalysisService: invalid score_tier "${input.score_tier}"`);
     }
 
     return {
-      scoreTier: input.score_tier as 'green' | 'yellow' | 'red',
+      scoreTier: input.score_tier as ScoreTier,
       coachingText: String(input.coaching_text).slice(0, 120),
     };
   }

@@ -60,7 +60,7 @@ describe('FormAnalysisService.analyzeForm', () => {
     const result = await formAnalysisService.analyzeForm('squat', 3, SAMPLE_ANGLE_DATA, 0.75);
 
     expect(result.scoreTier).toBe('yellow');
-    expect(result.coachingText).toContain('knee');
+    expect(result.coachingText).toBe('Left knee caving slightly — push knees out.');
   });
 
   it('returns red score for significant form problems', async () => {
@@ -156,7 +156,7 @@ describe('FormAnalysisService.analyzeForm', () => {
     for (const exercise of exercises) {
       mockMessagesCreate.mockResolvedValueOnce(makeToolUseResponse('green', 'Good form.'));
       const result = await formAnalysisService.analyzeForm(exercise, 5, SAMPLE_ANGLE_DATA, 0.8);
-      expect(['green', 'yellow', 'red']).toContain(result.scoreTier);
+      expect(result.scoreTier).toBe('green');
     }
   });
 
