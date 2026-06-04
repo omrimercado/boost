@@ -8,11 +8,14 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useSessionStore } from '@/src/stores/useSessionStore';
+import { syncSetAndAnalyzeForm, type FormScoreResult } from '@/src/services/formAnalysis';
+import type { ScoreTier } from '@boost/shared';
 
 const ANGLE_JOINT_LABELS: Record<string, string> = {
   knee_left: 'Knee L',
@@ -29,6 +32,23 @@ const ANGLE_JOINT_LABELS: Record<string, string> = {
   knee_back: 'Back Knee',
 };
 
+const SCORE_CONFIG: Record<ScoreTier, { bg: string; border: string; text: string; icon: React.ComponentProps<typeof Ionicons>['name'] }> = {
+  green: { bg: '#052e16', border: '#166534', text: '#4ade80', icon: 'checkmark-circle' },
+  yellow: { bg: '#422006', border: '#92400e', text: '#fbbf24', icon: 'warning' },
+  red: { bg: '#450a0a', border: '#991b1b', text: '#f87171', icon: 'close-circle' },
+};
+
+function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  // RFC 4122 v4 fallback
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
+}
+
 function formatExercise(name: string): string {
   return name
     .split('_')
@@ -36,40 +56,79 @@ function formatExercise(name: string): string {
     .join(' ');
 }
 
+type AnalysisState = 'idle' | 'analyzing' | 'success' | 'timeout' | 'offline' | 'error';
+
 export default function SetLoggingScreen() {
-  const { activeSession, addSet, endSession, isSyncing, pendingAngleData, clearPendingAngleData } = useSessionStore();
+  const { activeSession, addSet, endSession, isSyncing, pendingAngleData, pendingPoseConfidence, clearPendingAngleData } = useSessionStore();
   const [weight, setWeight] = useState('');
   const [reps, setReps] = useState('');
-  const [error, setError] = useState('');
+  const [inputError, setInputError] = useState('');
   const [lastSavedSet, setLastSavedSet] = useState<number | null>(null);
+
+  const [analysisState, setAnalysisState] = useState<AnalysisState>('idle');
+  const [formScoreResult, setFormScoreResult] = useState<FormScoreResult | null>(null);
+  const [pendingSetNumber, setPendingSetNumber] = useState<number | null>(null);
 
   const exercise = activeSession?.exerciseName;
   const setsForExercise =
     activeSession?.sets.filter((s) => s.exerciseName === exercise) ?? [];
   const setNumber = setsForExercise.length + 1;
 
-  const handleSave = () => {
-    setError('');
+  const handleSave = async () => {
+    setInputError('');
     const repsNum = parseInt(reps, 10);
     if (!reps.trim() || isNaN(repsNum) || repsNum < 1) {
-      setError('Please enter a valid rep count.');
+      setInputError('Please enter a valid rep count.');
       return;
     }
-    if (!exercise) return;
+    if (!exercise || !activeSession) return;
 
     const weightNum = weight.trim() ? parseFloat(weight) : null;
 
-    addSet({
-      exerciseName: exercise,
-      weightKg: weightNum,
-      reps: repsNum,
-      setNumber,
-    });
+    if (pendingAngleData) {
+      const setId = generateUUID();
+      const loggedAt = new Date().toISOString();
 
-    setLastSavedSet(setNumber);
-    setWeight('');
-    setReps('');
-    // angleData is consumed by addSet — no explicit clear needed here
+      // Save locally immediately so the set is not lost regardless of AI outcome
+      addSet({ id: setId, exerciseName: exercise, weightKg: weightNum, reps: repsNum, setNumber });
+      setPendingSetNumber(setNumber);
+      setWeight('');
+      setReps('');
+      setAnalysisState('analyzing');
+
+      const outcome = await syncSetAndAnalyzeForm(
+        activeSession.id,
+        {
+          id: setId,
+          exerciseName: exercise,
+          weightKg: weightNum,
+          reps: repsNum,
+          setNumber,
+          loggedAt,
+        },
+        pendingAngleData,
+        pendingPoseConfidence,
+      );
+
+      if (outcome.ok) {
+        setFormScoreResult(outcome.result);
+        setAnalysisState('success');
+      } else {
+        setAnalysisState(outcome.reason === 'timeout' ? 'timeout' : outcome.reason === 'offline' ? 'offline' : 'error');
+      }
+    } else {
+      addSet({ exerciseName: exercise, weightKg: weightNum, reps: repsNum, setNumber });
+      setLastSavedSet(setNumber);
+      setWeight('');
+      setReps('');
+    }
+  };
+
+  const handleDismissResult = () => {
+    setAnalysisState('idle');
+    setFormScoreResult(null);
+    setLastSavedSet(pendingSetNumber);
+    setPendingSetNumber(null);
   };
 
   const handleEndSession = async () => {
@@ -91,6 +150,97 @@ export default function SetLoggingScreen() {
     );
   }
 
+  // ── Analyzing overlay ───────────────────────────────────────────────────────
+  if (analysisState === 'analyzing') {
+    return (
+      <SafeAreaView className="flex-1 bg-slate-950 items-center justify-center px-8" edges={['top', 'bottom']}>
+        <View className="items-center">
+          <ActivityIndicator size="large" color="#f97316" style={{ marginBottom: 20 }} />
+          <Text className="text-white text-lg font-bold mb-2">Analyzing your form...</Text>
+          <Text className="text-slate-400 text-sm text-center">
+            Our AI coach is reviewing your movement data
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Form score result card ──────────────────────────────────────────────────
+  if (analysisState === 'success' && formScoreResult) {
+    const cfg = SCORE_CONFIG[formScoreResult.scoreTier];
+    const tierLabel = formScoreResult.scoreTier.charAt(0).toUpperCase() + formScoreResult.scoreTier.slice(1);
+    return (
+      <SafeAreaView className="flex-1 bg-slate-950 px-5" edges={['top', 'bottom']}>
+        <View className="flex-1 justify-center">
+          <View
+            style={[styles.resultCard, { backgroundColor: cfg.bg, borderColor: cfg.border }]}
+          >
+            {/* Score badge */}
+            <View className="items-center mb-5">
+              <Ionicons name={cfg.icon} size={48} color={cfg.text} />
+              <Text style={[styles.tierLabel, { color: cfg.text }]}>{tierLabel} Form</Text>
+              <View style={[styles.tierBadge, { backgroundColor: cfg.border }]}>
+                <Text style={{ color: cfg.text, fontWeight: 'bold', fontSize: 12 }}>{tierLabel.toUpperCase()}</Text>
+              </View>
+            </View>
+
+            {/* Coaching text */}
+            <Text className="text-white text-sm text-center leading-5 mb-6">
+              {formScoreResult.coachingText}
+            </Text>
+
+            {/* Log This Set button */}
+            <TouchableOpacity
+              onPress={handleDismissResult}
+              activeOpacity={0.85}
+              className="bg-orange-500 rounded-2xl py-4 items-center"
+              accessibilityRole="button"
+              accessibilityLabel="Log This Set"
+            >
+              <Text className="text-white font-bold text-base">Log This Set</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Error / timeout states ─────────────────────────────────────────────────
+  if (analysisState === 'timeout' || analysisState === 'offline' || analysisState === 'error') {
+    const message =
+      analysisState === 'timeout'
+        ? 'Analysis unavailable — took too long'
+        : analysisState === 'offline'
+        ? 'No connection — form analysis skipped'
+        : "Couldn't analyze this set";
+
+    return (
+      <SafeAreaView className="flex-1 bg-slate-950 px-5" edges={['top', 'bottom']}>
+        <View className="flex-1 justify-center">
+          <View className="bg-slate-900 border border-slate-700 rounded-3xl p-6 items-center">
+            <Ionicons name="cloud-offline-outline" size={40} color="#64748b" style={{ marginBottom: 16 }} />
+            <Text className="text-slate-300 text-base font-semibold text-center mb-2">
+              {message}
+            </Text>
+            <Text className="text-slate-500 text-sm text-center mb-6">
+              Your set was saved locally. You can still log it without a score.
+            </Text>
+            <TouchableOpacity
+              onPress={handleDismissResult}
+              activeOpacity={0.85}
+              className="bg-orange-500 rounded-2xl py-4 items-center w-full"
+              accessibilityRole="button"
+              accessibilityLabel="Log This Set"
+            >
+              <Text className="text-white font-bold text-base">Log This Set</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Normal set logging form ────────────────────────────────────────────────
   return (
     <SafeAreaView className="flex-1 bg-slate-950" edges={['top']}>
       {/* Header */}
@@ -228,7 +378,7 @@ export default function SetLoggingScreen() {
             </View>
 
             {/* Error */}
-            {error ? (
+            {inputError ? (
               <View className="bg-red-950 border border-red-900 rounded-2xl px-4 py-3 mb-5 flex-row items-center">
                 <Ionicons
                   name="alert-circle-outline"
@@ -240,13 +390,13 @@ export default function SetLoggingScreen() {
                   className="text-red-400 text-sm flex-1"
                   accessibilityRole="alert"
                 >
-                  {error}
+                  {inputError}
                 </Text>
               </View>
             ) : null}
 
             {/* Save confirmation */}
-            {lastSavedSet !== null && !error ? (
+            {lastSavedSet !== null && !inputError ? (
               <View className="bg-green-950 border border-green-900 rounded-2xl px-4 py-3 mb-5 flex-row items-center">
                 <Ionicons
                   name="checkmark-circle"
@@ -268,6 +418,8 @@ export default function SetLoggingScreen() {
             onPress={handleSave}
             activeOpacity={0.85}
             className="bg-orange-500 rounded-2xl py-4 items-center mb-3"
+            accessibilityRole="button"
+            accessibilityLabel="Save Set"
           >
             <Text className="text-white font-bold text-base">Save Set</Text>
           </TouchableOpacity>
@@ -283,3 +435,22 @@ export default function SetLoggingScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  resultCard: {
+    borderRadius: 24,
+    borderWidth: 1,
+    padding: 28,
+  },
+  tierLabel: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  tierBadge: {
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+});
